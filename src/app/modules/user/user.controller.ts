@@ -32,6 +32,7 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       data: newUser,
     });
   } catch (error) {
+    /* eslint-disable-next-line no-console */
     console.error("Error creating user:", error);
     res.status(status.INTERNAL_SERVER_ERROR).json({
       success: false,

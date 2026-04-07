@@ -1,9 +1,4 @@
-import express, {
-  type Express,
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
 import router from "./app/routes/index.js";
 
@@ -33,7 +28,8 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Global error handler
-app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+app.use((error: Error, _req: Request, res: Response) => {
+  /* eslint-disable-next-line no-console */
   console.error(error.stack);
   res.status(500).json({
     success: false,
