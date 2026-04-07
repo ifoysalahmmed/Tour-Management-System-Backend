@@ -4,8 +4,8 @@ import express, {
   type Response,
   type NextFunction,
 } from "express";
-import { UserRoutes } from "./app/modules/user/user.route.js";
 import cors from "cors";
+import router from "./app/routes/index.js";
 
 const app: Express = express();
 
@@ -15,7 +15,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 
 // Routes
-app.use("/api/v1/users", UserRoutes);
+app.use("/api/v1", router);
 
 app.get("/", (_req: Request, res: Response) => {
   res.status(200).json({
