@@ -1,20 +1,18 @@
-import dotenv from "dotenv";
+/* eslint-disable no-console */
 import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app.js";
+import { envVars } from "./config/env.js";
 
-dotenv.config();
-
-const PORT: number = Number(process.env.PORT) || 5000;
 let server: Server;
 
 const startServer = async (): Promise<void> => {
   try {
-    await mongoose.connect(process.env.DATABASE_URL as string);
+    await mongoose.connect(envVars.DATABASE_URL);
     console.log("Connected to MongoDB using Mongoose");
 
-    server = app.listen(PORT, () => {
-      console.log(`Server is listening to PORT ${PORT}`);
+    server = app.listen(envVars.PORT, () => {
+      console.log(`Server is listening to PORT ${envVars.PORT}`);
     });
   } catch (error) {
     console.error("Failed to start server:", error);
