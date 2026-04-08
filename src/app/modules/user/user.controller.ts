@@ -1,6 +1,6 @@
 import type { Request, Response } from "express";
-import { UserModel } from "./user.model.js";
 import status from "http-status";
+import { UserServices } from "./user.service.js";
 
 const createUser = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -14,9 +14,20 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const existingUser = await UserModel.findOne({ email });
+    const result = await UserServices.createUserIntoDB({ name, email });
 
-    if (existingUser) {
+    res.status(status.CREATED).json({
+      success: true,
+      message: "User created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      error.code === 11000
+    ) {
       res.status(status.CONFLICT).json({
         success: false,
         message: "User with this email already exists",
@@ -24,16 +35,9 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const newUser = await UserModel.create({ name, email });
-
-    res.status(status.CREATED).json({
-      success: true,
-      message: "User created successfully",
-      data: newUser,
-    });
-  } catch (error) {
     /* eslint-disable-next-line no-console */
     console.error("Error creating user:", error);
+
     res.status(status.INTERNAL_SERVER_ERROR).json({
       success: false,
       message: "Internal server error",
