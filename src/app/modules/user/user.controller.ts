@@ -2,13 +2,15 @@ import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import { UserServices } from "./user.service.js";
 import catchAsync from "../../utils/catchAsync.js";
+import sendResponse from "../../utils/sendResponse.js";
 
 const createUser = catchAsync(async (_req, res) => {
   const { name, email } = _req.body as { name: string; email: string };
 
   if (!name || !email) {
-    res.status(status.BAD_REQUEST).json({
-      success: false,
+    sendResponse(res, {
+      statusCode: status.BAD_REQUEST,
+      success: true,
       message: "Name and email are required",
     });
     return;
@@ -16,7 +18,8 @@ const createUser = catchAsync(async (_req, res) => {
 
   const result = await UserServices.createUserIntoDB({ name, email });
 
-  res.status(status.CREATED).json({
+  sendResponse(res, {
+    statusCode: status.CREATED,
     success: true,
     message: "User created successfully",
     data: result,
@@ -26,7 +29,8 @@ const createUser = catchAsync(async (_req, res) => {
 const getAllUsers = catchAsync(async (_req, res) => {
   const users = await UserServices.getAllUsersFromDB();
 
-  res.status(status.OK).json({
+  sendResponse(res, {
+    statusCode: status.OK,
     success: true,
     message: "Users retrieved successfully",
     data: users,

@@ -2,6 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/AppError.js";
+import sendResponse from "../utils/sendResponse.js";
 
 const errorHandler = (
   error: Error,
@@ -15,22 +16,26 @@ const errorHandler = (
   const isDevelopment = envVars.NODE_ENV === "development";
 
   if (error instanceof AppError) {
-    res.status(error.statusCode).json({
+    sendResponse(res, {
+      statusCode: error.statusCode,
       success: false,
       message: error.message,
     });
+
     return;
   }
 
   if ("code" in error && (error as { code: number }).code === 11000) {
-    res.status(status.CONFLICT).json({
+    sendResponse(res, {
+      statusCode: status.CONFLICT,
       success: false,
       message: "Duplicate entry — record already exists",
     });
     return;
   }
 
-  res.status(status.INTERNAL_SERVER_ERROR).json({
+  sendResponse(res, {
+    statusCode: status.INTERNAL_SERVER_ERROR,
     success: false,
     message: isDevelopment
       ? error.message || "Internal server error from global handler"

@@ -1,10 +1,11 @@
-import express, { type Express, type Request, type Response } from "express";
 import cors from "cors";
+import express, { type Express, type Request, type Response } from "express";
 import status from "http-status";
-import router from "./app/routes/index.js";
-import notFound from "./app/middlewares/notFound.middleware.js";
-import errorHandler from "./app/middlewares/error.middleware.js";
 import { envVars } from "./app/config/env.js";
+import errorHandler from "./app/middlewares/error.middleware.js";
+import notFound from "./app/middlewares/notFound.middleware.js";
+import router from "./app/routes/index.js";
+import sendResponse from "./app/utils/sendResponse.js";
 
 const app: Express = express();
 
@@ -17,7 +18,8 @@ app.use(cors({ origin: envVars.ALLOWED_ORIGINS }));
 app.use("/api/v1", router);
 
 app.get("/", (_req: Request, res: Response) => {
-  res.status(status.OK).json({
+  sendResponse(res, {
+    statusCode: status.OK,
     success: true,
     message: "Welcome to the Tour Management API",
   });
