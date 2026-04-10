@@ -6,7 +6,13 @@ const createUserIntoDB = async (payload: Pick<IUser, "name" | "email">) => {
 };
 
 const getAllUsersFromDB = async () => {
-  return await UserModel.find();
+  const users = await UserModel.find();
+  const total = await UserModel.countDocuments();
+
+  return {
+    users,
+    total: { total },
+  };
 };
 
 export const UserServices = {
