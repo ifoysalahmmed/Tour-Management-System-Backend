@@ -5,6 +5,11 @@ const createUserIntoDB = async (payload: Pick<IUser, "name" | "email">) => {
   return await UserModel.create(payload);
 };
 
+const getAllUsersFromDB = async () => {
+  return await UserModel.find();
+};
+
 export const UserServices = {
   createUserIntoDB,
+  getAllUsersFromDB,
 };
