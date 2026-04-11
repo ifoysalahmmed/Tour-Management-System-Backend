@@ -20,60 +20,33 @@ const startServer = async (): Promise<void> => {
   }
 };
 
-const gracefulShutdown = (event: string) => {
+const gracefulShutdown = (event: string, isError = false) => {
   return (reason?: Error | unknown): void => {
-    console.error(`Received ${event}:`, reason);
+    if (isError) {
+      console.error(`Received ${event}:`, reason);
+    } else {
+      console.log(`Received ${event}, shutting down gracefully...`);
+    }
 
     if (server) {
       server.close(() => {
         console.log(`Server closed due to ${event}`);
         mongoose.connection.close().then(() => {
           console.log("MongoDB connection closed");
-          process.exit(1);
+          process.exit(isError ? 1 : 0);
         });
       });
     } else {
       console.log("No server to close, exiting process");
-      process.exit(1);
+      process.exit(isError ? 1 : 0);
     }
   };
 };
 
 startServer();
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM received, shutting down gracefully...");
+process.on("SIGTERM", gracefulShutdown("SIGTERM"));
+process.on("SIGINT", gracefulShutdown("SIGINT"));
 
-  if (server) {
-    server.close(() => {
-      console.log("Server closed due to Signal Termination");
-      mongoose.connection.close().then(() => {
-        console.log("MongoDB connection closed");
-        process.exit(0);
-      });
-    });
-  } else {
-    console.log("No server to close, exiting process");
-    process.exit(0);
-  }
-});
-
-process.on("SIGINT", () => {
-  console.log("SIGINT received, shutting down gracefully...");
-
-  if (server) {
-    server.close(() => {
-      console.log("Server closed due to Signal Interruption");
-      mongoose.connection.close().then(() => {
-        console.log("MongoDB connection closed");
-        process.exit(0);
-      });
-    });
-  } else {
-    console.log("No server to close, exiting process");
-    process.exit(0);
-  }
-});
-
-process.on("unhandledRejection", gracefulShutdown("unhandledRejection"));
-process.on("uncaughtException", gracefulShutdown("uncaughtException"));
+process.on("unhandledRejection", gracefulShutdown("unhandledRejection", true));
+process.on("uncaughtException", gracefulShutdown("uncaughtException", true));

@@ -1,50 +1,33 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import { UserServices } from "./user.service.js";
+import catchAsync from "../../utils/catchAsync.js";
+import sendResponse from "../../utils/sendResponse.js";
 
-const createUser = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const { name, email } = req.body as { name: string; email: string };
+const createUser = catchAsync(async (_req, res) => {
+  const result = await UserServices.createUserIntoDB(_req.body);
 
-    if (!name || !email) {
-      res.status(status.BAD_REQUEST).json({
-        success: false,
-        message: "Name and email are required",
-      });
-      return;
-    }
+  sendResponse(res, {
+    statusCode: status.CREATED,
+    success: true,
+    message: "User created successfully",
+    data: result,
+  });
+});
 
-    const result = await UserServices.createUserIntoDB({ name, email });
+const getAllUsers = catchAsync(async (_req, res) => {
+  const result = await UserServices.getAllUsersFromDB();
 
-    res.status(status.CREATED).json({
-      success: true,
-      message: "User created successfully",
-      data: result,
-    });
-  } catch (error) {
-    if (
-      typeof error === "object" &&
-      error !== null &&
-      "code" in error &&
-      error.code === 11000
-    ) {
-      res.status(status.CONFLICT).json({
-        success: false,
-        message: "User with this email already exists",
-      });
-      return;
-    }
-
-    /* eslint-disable-next-line no-console */
-    console.error("Error creating user:", error);
-
-    res.status(status.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: "Internal server error",
-    });
-  }
-};
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Users retrieved successfully",
+    data: result.users,
+    meta: result.total,
+  });
+});
 
 export const UserControllers = {
   createUser,
+  getAllUsers,
 };
