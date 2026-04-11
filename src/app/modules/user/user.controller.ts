@@ -5,18 +5,7 @@ import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 
 const createUser = catchAsync(async (_req, res) => {
-  const { name, email } = _req.body as { name: string; email: string };
-
-  if (!name || !email) {
-    sendResponse(res, {
-      statusCode: status.BAD_REQUEST,
-      success: true,
-      message: "Name and email are required",
-    });
-    return;
-  }
-
-  const result = await UserServices.createUserIntoDB({ name, email });
+  const result = await UserServices.createUserIntoDB(_req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,

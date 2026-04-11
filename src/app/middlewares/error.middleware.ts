@@ -37,9 +37,7 @@ const errorHandler = (
   sendResponse(res, {
     statusCode: status.INTERNAL_SERVER_ERROR,
     success: false,
-    message: isDevelopment
-      ? error.message || "Internal server error from global handler"
-      : "Internal server error",
+    message: error.message || "Internal server error",
     stack: isDevelopment ? error.stack : undefined,
   });
 };
