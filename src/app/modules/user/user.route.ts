@@ -6,18 +6,14 @@ import {
 } from "express";
 import { UserControllers } from "./user.controller.js";
 import createUserZodSchema from "./user.validation.js";
+import validateBody from "../../middlewares/validateBody.middleware.js";
 
 const router = Router();
 
 router.post(
   "/register",
-  async (_req: Request, res: Response, _next: NextFunction) => {
-    _req.body = await createUserZodSchema.parseAsync(_req.body);
-
-    console.log(_req.body);
-
-    UserControllers.createUser(_req, res, _next);
-  },
+  validateBody(createUserZodSchema),
+  UserControllers.createUser,
 );
 router.get("/", UserControllers.getAllUsers);
 
