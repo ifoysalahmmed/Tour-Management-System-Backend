@@ -7,10 +7,19 @@ interface EnvVars {
   DATABASE_URL: string;
   NODE_ENV: string;
   ALLOWED_ORIGINS: string[];
+  JWT_SECRET: string;
+  JWT_EXPIRES_IN: string;
 }
 
 const loadEnvVars = (): EnvVars => {
-  const requiredVars = ["PORT", "DATABASE_URL", "NODE_ENV", "ALLOWED_ORIGINS"];
+  const requiredVars = [
+    "PORT",
+    "DATABASE_URL",
+    "NODE_ENV",
+    "ALLOWED_ORIGINS",
+    "JWT_SECRET",
+    "JWT_EXPIRES_IN",
+  ];
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
   if (missingVars.length > 0) {
@@ -26,6 +35,8 @@ const loadEnvVars = (): EnvVars => {
     ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS as string)
       .split(",")
       .map((origin) => origin.trim()),
+    JWT_SECRET: process.env.JWT_SECRET as string,
+    JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as string,
   };
 };
 
