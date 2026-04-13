@@ -15,7 +15,7 @@ export enum UserStatus {
 
 /** Tracks how a user authenticated (e.g. credentials or OAuth) */
 export interface IAuthProvider {
-  provider: string; // "Credentials" | "Google"
+  provider: "google" | "credentials"; // "Credentials" | "Google"
   providerId: string; // OAuth provider's unique user ID (e.g. Google sub)
 }
 

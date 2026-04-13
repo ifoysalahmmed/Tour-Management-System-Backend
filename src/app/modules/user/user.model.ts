@@ -23,6 +23,7 @@ const userSchema = new Schema<IUser>(
     },
     auths: [
       {
+        _id: false,
         provider: { type: String, required: true },
         providerId: { type: String, required: true },
       },
