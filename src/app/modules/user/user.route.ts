@@ -5,7 +5,7 @@ import {
   type Response,
 } from "express";
 import { UserControllers } from "./user.controller.js";
-import createUserZodSchema from "./user.validation.js";
+import { createUserZodSchema } from "./user.validation.js";
 import validateBody from "../../middlewares/validateBody.middleware.js";
 
 const router = Router();
