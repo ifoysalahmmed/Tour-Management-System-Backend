@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import type { IAuthProvider, IUser } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
 
@@ -10,6 +11,8 @@ const createUserIntoDB = async (
     password: string;
   };
 
+  const hashedPassword = bcrypt.hashSync(password, 10);
+
   const authProvider: IAuthProvider = {
     provider: "credentials",
     providerId: email,
@@ -18,7 +21,7 @@ const createUserIntoDB = async (
   return await UserModel.create({
     name,
     email,
-    password,
+    password: hashedPassword,
     auths: [authProvider],
   });
 };

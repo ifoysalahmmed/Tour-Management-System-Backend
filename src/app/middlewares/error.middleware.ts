@@ -11,7 +11,7 @@ const errorHandler = (
   _next: NextFunction,
 ): void => {
   /* eslint-disable-next-line no-console */
-  console.error(error.stack);
+  // console.error(error.stack);
 
   const isDevelopment = envVars.NODE_ENV === "development";
 
