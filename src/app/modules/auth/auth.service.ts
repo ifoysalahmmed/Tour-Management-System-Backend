@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { AppError } from "../../errors/app.error.js";
 import { type IUser, UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
-import generateAccessToken from "../../utils/jwt.js";
+import { generateAccessToken } from "../../utils/jwt.js";
 
 const loginWithCredentials = async (
   payload: Pick<IUser, "email" | "password">,

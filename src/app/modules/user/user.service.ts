@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import type { IAuthProvider, IUser } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
+import { envVars } from "../../config/env.js";
 
 const createUserIntoDB = async (
   payload: Pick<IUser, "name" | "email" | "password">,
@@ -11,7 +12,7 @@ const createUserIntoDB = async (
     password: string;
   };
 
-  const hashedPassword = bcrypt.hashSync(password, 10);
+  const hashedPassword = bcrypt.hashSync(password, envVars.BCRYPT_SALT_ROUNDS);
 
   const authProvider: IAuthProvider = {
     provider: "credentials",

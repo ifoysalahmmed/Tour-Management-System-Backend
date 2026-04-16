@@ -9,6 +9,7 @@ interface EnvVars {
   ALLOWED_ORIGINS: string[];
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
+  BCRYPT_SALT_ROUNDS: number;
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -19,6 +20,7 @@ const loadEnvVars = (): EnvVars => {
     "ALLOWED_ORIGINS",
     "JWT_SECRET",
     "JWT_EXPIRES_IN",
+    "BCRYPT_SALT_ROUNDS",
   ];
   const missingVars = requiredVars.filter((varName) => !process.env[varName]);
 
@@ -37,6 +39,7 @@ const loadEnvVars = (): EnvVars => {
       .map((origin) => origin.trim()),
     JWT_SECRET: process.env.JWT_SECRET as string,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as string,
+    BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
   };
 };
 
