@@ -1,16 +1,30 @@
-import status from "http-status";
-import { AppError } from "../../errors/AppError.js";
-import type { IUser } from "./user.interface.js";
+import bcrypt from "bcryptjs";
+import type { IAuthProvider, IUser } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
+import { envVars } from "../../config/env.js";
 
-const createUserIntoDB = async (payload: Pick<IUser, "name" | "email">) => {
-  const { name, email } = payload as { name: string; email: string };
+const createUserIntoDB = async (
+  payload: Pick<IUser, "name" | "email" | "password">,
+) => {
+  const { name, email, password } = payload as {
+    name: string;
+    email: string;
+    password: string;
+  };
 
-  if (!name || !email) {
-    throw new AppError(status.BAD_REQUEST, "Name and Email are required");
-  }
+  const hashedPassword = bcrypt.hashSync(password, envVars.BCRYPT_SALT_ROUNDS);
 
-  return await UserModel.create(payload);
+  const authProvider: IAuthProvider = {
+    provider: "credentials",
+    providerId: email,
+  };
+
+  return await UserModel.create({
+    name,
+    email,
+    password: hashedPassword,
+    auths: [authProvider],
+  });
 };
 
 const getAllUsersFromDB = async () => {

@@ -1,11 +1,10 @@
-import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
-import { UserServices } from "./user.service.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
+import { UserServices } from "./user.service.js";
 
-const createUser = catchAsync(async (_req, res) => {
-  const result = await UserServices.createUserIntoDB(_req.body);
+const createUser = catchAsync(async (req, res) => {
+  const result = await UserServices.createUserIntoDB(req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,
