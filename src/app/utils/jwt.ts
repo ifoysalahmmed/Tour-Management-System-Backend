@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
-import { envVars } from "../../config/env.js";
-import type { TTokenPayload } from "./auth.interface.js";
+import type { TTokenPayload } from "../modules/auth/auth.interface.js";
+import { envVars } from "../config/env.js";
 
 const generateAccessToken = (payload: TTokenPayload) => {
   const accessToken = jwt.sign(

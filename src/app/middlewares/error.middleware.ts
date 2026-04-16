@@ -1,7 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
+import jwt from "jsonwebtoken";
 import { envVars } from "../config/env.js";
-import { AppError } from "../errors/AppError.js";
+import { AppError } from "../errors/app.error.js";
 import sendResponse from "../utils/sendResponse.js";
 
 const errorHandler = (
@@ -22,6 +23,24 @@ const errorHandler = (
       message: error.message,
     });
 
+    return;
+  }
+
+  if (error instanceof jwt.TokenExpiredError) {
+    sendResponse(res, {
+      statusCode: status.UNAUTHORIZED,
+      success: false,
+      message: "Access token has expired",
+    });
+    return;
+  }
+
+  if (error instanceof jwt.JsonWebTokenError) {
+    sendResponse(res, {
+      statusCode: status.UNAUTHORIZED,
+      success: false,
+      message: "Invalid access token",
+    });
     return;
   }
 

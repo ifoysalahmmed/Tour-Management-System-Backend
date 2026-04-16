@@ -1,6 +1,6 @@
 import { type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
-import { AppError } from "../errors/AppError.js";
+import { AppError } from "../errors/app.error.js";
 import status from "http-status";
 
 const validateBody =

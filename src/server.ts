@@ -3,6 +3,9 @@ import { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app.js";
 import { envVars } from "./app/config/env.js";
+import nodeDns from "node:dns";
+
+nodeDns.setServers(["1.1.1.1", "8.8.8.8"]); // Set custom DNS servers to avoid potential DNS resolution issues
 
 let server: Server;
 
