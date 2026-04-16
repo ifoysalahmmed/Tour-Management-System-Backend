@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import app from "./app.js";
 import { envVars } from "./app/config/env.js";
 import nodeDns from "node:dns";
+import seedSuperAdmin from "./app/utils/seedSuperAdmin.js";
 
 nodeDns.setServers(["1.1.1.1", "8.8.8.8"]); // Set custom DNS servers to avoid potential DNS resolution issues
 
@@ -46,7 +47,10 @@ const gracefulShutdown = (event: string, isError = false) => {
   };
 };
 
-startServer();
+(async () => {
+  await startServer();
+  await seedSuperAdmin();
+})();
 
 process.on("SIGTERM", gracefulShutdown("SIGTERM"));
 process.on("SIGINT", gracefulShutdown("SIGINT"));
