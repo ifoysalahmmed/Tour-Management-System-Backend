@@ -19,4 +19,10 @@ router.get(
   UserControllers.getAllUsers,
 );
 
+router.patch(
+  "/:id",
+  checkAuth(...Object.values(UserRole)),
+  UserControllers.updateUser,
+);
+
 export const UserRoutes = router;
