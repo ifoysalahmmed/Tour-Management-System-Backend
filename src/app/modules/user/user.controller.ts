@@ -31,9 +31,10 @@ const getAllUsers = catchAsync(async (_req, res) => {
 const updateUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
-  const decodedToken = verifyAccessToken(
-    req.headers.authorization as string,
-  ) as JwtPayload;
+  // const decodedToken = verifyAccessToken(
+  //   req.headers.authorization as string,
+  // ) as JwtPayload;
+  const decodedToken = req.user as JwtPayload;
   const result = await UserServices.updateUserInDB(
     id as string,
     updateData,

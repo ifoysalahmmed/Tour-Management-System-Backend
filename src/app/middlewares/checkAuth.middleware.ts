@@ -21,6 +21,8 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
           "You are not authorized to access this route",
         );
       }
+      
+      req.user = verifiedToken;
 
       next();
     } catch (error) {
