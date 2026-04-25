@@ -9,6 +9,8 @@ interface EnvVars {
   ALLOWED_ORIGINS: string[];
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
+  JWT_REFRESH_SECRET: string;
+  JWT_REFRESH_EXPIRES_IN: string;
   BCRYPT_SALT_ROUNDS: number;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
@@ -22,6 +24,8 @@ const loadEnvVars = (): EnvVars => {
     "ALLOWED_ORIGINS",
     "JWT_SECRET",
     "JWT_EXPIRES_IN",
+    "JWT_REFRESH_SECRET",
+    "JWT_REFRESH_EXPIRES_IN",
     "BCRYPT_SALT_ROUNDS",
     "SUPER_ADMIN_EMAIL",
     "SUPER_ADMIN_PASSWORD",
@@ -43,6 +47,8 @@ const loadEnvVars = (): EnvVars => {
       .map((origin) => origin.trim()),
     JWT_SECRET: process.env.JWT_SECRET as string,
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as string,
+    JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
+    JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN as string,
     BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,

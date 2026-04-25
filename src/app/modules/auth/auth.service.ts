@@ -4,6 +4,9 @@ import { AppError } from "../../errors/app.error.js";
 import { type IUser, UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
 import { generateAccessToken } from "../../utils/jwt.js";
+import { envVars } from "../../config/env.js";
+import type { SignOptions } from "jsonwebtoken";
+import type { TTokenPayload } from "./auth.interface.js";
 
 const loginWithCredentials = async (
   payload: Pick<IUser, "email" | "password">,
@@ -46,14 +49,30 @@ const loginWithCredentials = async (
     throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
   }
 
-  const accessToken = generateAccessToken({
-    _id: isUserExist._id,
+  const { password: _password, ...safeUser } = isUserExist;
+
+  const jwtPayload: TTokenPayload = {
+    id: isUserExist._id,
     email: isUserExist.email,
     role: isUserExist.role,
-  });
+  };
+
+  const accessToken = generateAccessToken(
+    jwtPayload,
+    envVars.JWT_SECRET as string,
+    envVars.JWT_EXPIRES_IN as NonNullable<SignOptions["expiresIn"]>,
+  );
+
+  const refreshToken = generateAccessToken(
+    jwtPayload,
+    envVars.JWT_REFRESH_SECRET as string,
+    envVars.JWT_REFRESH_EXPIRES_IN as NonNullable<SignOptions["expiresIn"]>,
+  );
 
   return {
     accessToken,
+    refreshToken,
+    user: safeUser,
   };
 };
 
