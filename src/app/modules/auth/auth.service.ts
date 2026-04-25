@@ -1,10 +1,11 @@
 import bcrypt from "bcryptjs";
 import status from "http-status";
 
-import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
-import { verifyAccessToken } from "../../utils/jwt.js";
-import { generateAuthTokens } from "../../utils/userAuthTokens.js";
+import {
+  generateAccessTokenFromRefreshToken,
+  generateAuthTokens,
+} from "../../utils/userAuthTokens.js";
 import type { IUser } from "../user/user.interface.js";
 import { UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
@@ -61,40 +62,11 @@ const loginWithCredentials = async (
   };
 };
 
-const generateNewAccessToken = async (refreshToken: string) => {
-  const verifiedToken = await verifyAccessToken(
-    refreshToken,
-    envVars.JWT_REFRESH_SECRET,
-  );
-
-  const isUserExist = await UserModel.findOne({
-    email: verifiedToken.email,
-  }).lean();
-
-  if (!isUserExist) {
-    throw new AppError(status.NOT_FOUND, "Invalid credentials");
-  }
-
-  if (isUserExist.isActive === UserStatus.BLOCKED) {
-    throw new AppError(status.FORBIDDEN, "Your account has been blocked");
-  }
-
-  if (isUserExist.isActive === UserStatus.INACTIVE) {
-    throw new AppError(status.FORBIDDEN, "Your account is inactive");
-  }
-
-  if (isUserExist.isDeleted) {
-    throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
-  }
-
-  const { accessToken } = generateAuthTokens(isUserExist);
-
-  return {
-    accessToken,
-  };
+const refreshAccessToken = async (refreshToken: string) => {
+  return await generateAccessTokenFromRefreshToken(refreshToken);
 };
 
 export const AuthServices = {
   loginWithCredentials,
-  generateNewAccessToken,
+  refreshAccessToken,
 };

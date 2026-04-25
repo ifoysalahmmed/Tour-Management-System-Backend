@@ -12,6 +12,6 @@ router.post(
   AuthControllers.loginWithCredentials,
 );
 
-router.post("/refresh-token", AuthControllers.refreshAccessToken);
+router.post("/refresh-token", AuthControllers.handleRefreshToken);
 
 export const AuthRoutes = router;

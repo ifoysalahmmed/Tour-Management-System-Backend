@@ -3,20 +3,13 @@ import status from "http-status";
 import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
+import setCookies from "../../utils/setCookies.js";
 import { AuthServices } from "./auth.service.js";
 
 const loginWithCredentials = catchAsync(async (req, res) => {
   const loginResult = await AuthServices.loginWithCredentials(req.body);
 
-  res.cookie("accessToken", loginResult.accessToken, {
-    httpOnly: true,
-    secure: false,
-  });
-
-  res.cookie("refreshToken", loginResult.refreshToken, {
-    httpOnly: true,
-    secure: false,
-  });
+  setCookies(res, loginResult);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -26,26 +19,28 @@ const loginWithCredentials = catchAsync(async (req, res) => {
   });
 });
 
-const refreshAccessToken = catchAsync(async (req, res) => {
+const handleRefreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
     throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
   }
 
-  const newAccessToken = await AuthServices.generateNewAccessToken(
+  const refreshedAccessToken = await AuthServices.refreshAccessToken(
     refreshToken as string,
   );
+
+  setCookies(res, refreshedAccessToken);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Logged in successfully",
-    data: newAccessToken,
+    data: refreshedAccessToken,
   });
 });
 
 export const AuthControllers = {
   loginWithCredentials,
-  refreshAccessToken,
+  handleRefreshToken,
 };
