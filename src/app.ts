@@ -1,4 +1,5 @@
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import express, { type Express, type Request, type Response } from "express";
 import status from "http-status";
 import { envVars } from "./app/config/env.js";
@@ -13,7 +14,7 @@ const app: Express = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: envVars.ALLOWED_ORIGINS }));
-
+app.use(cookieParser());
 // Routes
 app.use("/api/v1", router);
 
