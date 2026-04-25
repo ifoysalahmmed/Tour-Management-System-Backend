@@ -1,15 +1,12 @@
 import bcrypt from "bcryptjs";
-import {
-  UserRole,
-  UserStatus,
-  type IAuthProvider,
-  type IUser,
-} from "./user.interface.js";
-import { UserModel } from "./user.model.js";
-import { envVars } from "../../config/env.js";
-import type { JwtPayload } from "jsonwebtoken";
-import { AppError } from "../../errors/app.error.js";
 import status from "http-status";
+import type { JwtPayload } from "jsonwebtoken";
+
+import { envVars } from "../../config/env.js";
+import { AppError } from "../../errors/app.error.js";
+import type { IAuthProvider, IUser } from "./user.interface.js";
+import { UserRole, UserStatus } from "./user.interface.js";
+import { UserModel } from "./user.model.js";
 
 const createUserIntoDB = async (
   payload: Pick<IUser, "name" | "email" | "password">,

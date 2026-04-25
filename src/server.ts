@@ -1,9 +1,10 @@
 /* eslint-disable no-console */
 import { Server } from "http";
 import mongoose from "mongoose";
+import nodeDns from "node:dns";
+
 import app from "./app.js";
 import { envVars } from "./app/config/env.js";
-import nodeDns from "node:dns";
 import seedSuperAdmin from "./app/utils/seedSuperAdmin.js";
 
 nodeDns.setServers(["1.1.1.1", "8.8.8.8"]); // Set custom DNS servers to avoid potential DNS resolution issues

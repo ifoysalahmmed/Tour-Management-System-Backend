@@ -1,7 +1,8 @@
-import { type NextFunction, type Request, type Response } from "express";
-import { z } from "zod";
-import { AppError } from "../errors/app.error.js";
+import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
+import * as z from "zod";
+
+import { AppError } from "../errors/app.error.js";
 
 const validateBody =
   (schema: z.ZodSchema) =>

@@ -1,4 +1,6 @@
-import jwt, { type SignOptions } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import type { SignOptions } from "jsonwebtoken";
+
 import type { TTokenPayload } from "../modules/auth/auth.interface.js";
 
 export const generateAccessToken = (

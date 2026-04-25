@@ -1,11 +1,13 @@
-import status from "http-status";
 import bcrypt from "bcryptjs";
-import { AppError } from "../../errors/app.error.js";
-import { type IUser, UserStatus } from "../user/user.interface.js";
-import { UserModel } from "../user/user.model.js";
-import { verifyAccessToken } from "../../utils/jwt.js";
+import status from "http-status";
+
 import { envVars } from "../../config/env.js";
+import { AppError } from "../../errors/app.error.js";
+import { verifyAccessToken } from "../../utils/jwt.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
+import type { IUser } from "../user/user.interface.js";
+import { UserStatus } from "../user/user.interface.js";
+import { UserModel } from "../user/user.model.js";
 
 const loginWithCredentials = async (
   payload: Pick<IUser, "email" | "password">,

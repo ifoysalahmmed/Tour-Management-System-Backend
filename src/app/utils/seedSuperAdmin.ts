@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
-import { envVars } from "../config/env.js";
-import { UserModel } from "../modules/user/user.model.js";
-import { UserRole } from "../modules/user/user.interface.js";
-import { AppError } from "../errors/app.error.js";
 import status from "http-status";
+
+import { envVars } from "../config/env.js";
+import { AppError } from "../errors/app.error.js";
+import { UserRole } from "../modules/user/user.interface.js";
+import { UserModel } from "../modules/user/user.model.js";
 
 const seedSuperAdmin = async () => {
   try {
