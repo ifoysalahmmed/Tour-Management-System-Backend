@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import jwt from "jsonwebtoken";
+
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
 import sendResponse from "../utils/sendResponse.js";
@@ -11,9 +12,6 @@ const errorHandler = (
   res: Response,
   _next: NextFunction,
 ): void => {
-  /* eslint-disable-next-line no-console */
-  // console.error(error.stack);
-
   const isDevelopment = envVars.NODE_ENV === "development";
 
   if (error instanceof AppError) {

@@ -1,7 +1,9 @@
-import cors from "cors";
 import cookieParser from "cookie-parser";
-import express, { type Express, type Request, type Response } from "express";
+import cors from "cors";
+import express from "express";
+import type { Express, Request, Response } from "express";
 import status from "http-status";
+
 import { envVars } from "./app/config/env.js";
 import errorHandler from "./app/middlewares/error.middleware.js";
 import notFound from "./app/middlewares/notFound.middleware.js";

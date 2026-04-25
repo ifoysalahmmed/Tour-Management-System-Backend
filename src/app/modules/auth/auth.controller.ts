@@ -1,8 +1,9 @@
 import status from "http-status";
+
+import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { AuthServices } from "./auth.service.js";
-import { AppError } from "../../errors/app.error.js";
 
 const loginWithCredentials = catchAsync(async (req, res) => {
   const loginResult = await AuthServices.loginWithCredentials(req.body);

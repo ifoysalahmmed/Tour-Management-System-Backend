@@ -1,9 +1,10 @@
 import type { SignOptions } from "jsonwebtoken";
+
+import { envVars } from "../config/env.js";
 import type {
   TTokenPayload,
   TUserInput,
 } from "../modules/auth/auth.interface.js";
-import { envVars } from "../config/env.js";
 import { generateAccessToken } from "./jwt.js";
 
 export const generateAuthTokens = (user: TUserInput) => {

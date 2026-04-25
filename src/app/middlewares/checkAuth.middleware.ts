@@ -1,9 +1,10 @@
 import type { NextFunction, Request, Response } from "express";
-import type { UserRole } from "../modules/user/user.interface.js";
-import { AppError } from "../errors/app.error.js";
 import status from "http-status";
-import { verifyAccessToken } from "../utils/jwt.js";
+
 import { envVars } from "../config/env.js";
+import { AppError } from "../errors/app.error.js";
+import type { UserRole } from "../modules/user/user.interface.js";
+import { verifyAccessToken } from "../utils/jwt.js";
 
 const checkAuth = (...allowedRoles: UserRole[]) => {
   return async (req: Request, _res: Response, next: NextFunction) => {

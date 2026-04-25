@@ -4,8 +4,8 @@ dotenv.config({ override: true });
 
 interface EnvVars {
   PORT: number;
-  DATABASE_URL: string;
   NODE_ENV: string;
+  DATABASE_URL: string;
   ALLOWED_ORIGINS: string[];
   JWT_SECRET: string;
   JWT_EXPIRES_IN: string;
@@ -19,8 +19,8 @@ interface EnvVars {
 const loadEnvVars = (): EnvVars => {
   const requiredVars = [
     "PORT",
-    "DATABASE_URL",
     "NODE_ENV",
+    "DATABASE_URL",
     "ALLOWED_ORIGINS",
     "JWT_SECRET",
     "JWT_EXPIRES_IN",
@@ -30,7 +30,8 @@ const loadEnvVars = (): EnvVars => {
     "SUPER_ADMIN_EMAIL",
     "SUPER_ADMIN_PASSWORD",
   ];
-  const missingVars = requiredVars.filter((varName) => !process.env[varName]);
+
+  const missingVars = requiredVars.filter((key) => !process.env[key]);
 
   if (missingVars.length > 0) {
     throw new Error(
@@ -40,8 +41,8 @@ const loadEnvVars = (): EnvVars => {
 
   return {
     PORT: Number(process.env.PORT) || 5000,
-    DATABASE_URL: process.env.DATABASE_URL as string,
     NODE_ENV: process.env.NODE_ENV as string,
+    DATABASE_URL: process.env.DATABASE_URL as string,
     ALLOWED_ORIGINS: (process.env.ALLOWED_ORIGINS as string)
       .split(",")
       .map((origin) => origin.trim()),

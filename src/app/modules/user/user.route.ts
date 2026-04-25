@@ -1,9 +1,10 @@
 import { Router } from "express";
+
+import checkAuth from "../../middlewares/checkAuth.middleware.js";
 import validateBody from "../../middlewares/validateBody.middleware.js";
 import { UserControllers } from "./user.controller.js";
 import { UserRole } from "./user.interface.js";
 import { createUserZodSchema, updateUserZodSchema } from "./user.validation.js";
-import checkAuth from "../../middlewares/checkAuth.middleware.js";
 
 const router = Router();
 
