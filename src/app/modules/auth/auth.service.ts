@@ -3,10 +3,9 @@ import bcrypt from "bcryptjs";
 import { AppError } from "../../errors/app.error.js";
 import { type IUser, UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
-import { generateAccessToken } from "../../utils/jwt.js";
+import { verifyAccessToken } from "../../utils/jwt.js";
 import { envVars } from "../../config/env.js";
-import type { SignOptions } from "jsonwebtoken";
-import type { TTokenPayload } from "./auth.interface.js";
+import { generateAuthTokens } from "../../utils/userAuthTokens.js";
 
 const loginWithCredentials = async (
   payload: Pick<IUser, "email" | "password">,
@@ -51,23 +50,7 @@ const loginWithCredentials = async (
 
   const { password: _password, ...safeUser } = isUserExist;
 
-  const jwtPayload: TTokenPayload = {
-    id: isUserExist._id,
-    email: isUserExist.email,
-    role: isUserExist.role,
-  };
-
-  const accessToken = generateAccessToken(
-    jwtPayload,
-    envVars.JWT_SECRET as string,
-    envVars.JWT_EXPIRES_IN as NonNullable<SignOptions["expiresIn"]>,
-  );
-
-  const refreshToken = generateAccessToken(
-    jwtPayload,
-    envVars.JWT_REFRESH_SECRET as string,
-    envVars.JWT_REFRESH_EXPIRES_IN as NonNullable<SignOptions["expiresIn"]>,
-  );
+  const { accessToken, refreshToken } = generateAuthTokens(isUserExist);
 
   return {
     accessToken,
@@ -76,6 +59,40 @@ const loginWithCredentials = async (
   };
 };
 
+const generateNewAccessToken = async (refreshToken: string) => {
+  const verifiedToken = await verifyAccessToken(
+    refreshToken,
+    envVars.JWT_REFRESH_SECRET,
+  );
+
+  const isUserExist = await UserModel.findOne({
+    email: verifiedToken.email,
+  }).lean();
+
+  if (!isUserExist) {
+    throw new AppError(status.NOT_FOUND, "Invalid credentials");
+  }
+
+  if (isUserExist.isActive === UserStatus.BLOCKED) {
+    throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+  }
+
+  if (isUserExist.isActive === UserStatus.INACTIVE) {
+    throw new AppError(status.FORBIDDEN, "Your account is inactive");
+  }
+
+  if (isUserExist.isDeleted) {
+    throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
+  }
+
+  const { accessToken } = generateAuthTokens(isUserExist);
+
+  return {
+    accessToken,
+  };
+};
+
 export const AuthServices = {
   loginWithCredentials,
+  generateNewAccessToken,
 };

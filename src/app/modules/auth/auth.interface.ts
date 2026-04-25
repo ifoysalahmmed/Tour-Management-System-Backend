@@ -6,3 +6,7 @@ export type TTokenPayload = {
   email: IUser["email"];
   role: IUser["role"];
 };
+
+export type TUserInput = Pick<IUser, "email" | "role"> & {
+  _id: Types.ObjectId;
+};
