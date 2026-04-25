@@ -35,12 +35,34 @@ const handleRefreshToken = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Logged in successfully",
+    message: "Access token refreshed successfully",
     data: refreshedAccessToken,
+  });
+});
+
+const logout = catchAsync(async (_req, res) => {
+  res.clearCookie("accessToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Logout successfully",
+    data: null,
   });
 });
 
 export const AuthControllers = {
   loginWithCredentials,
   handleRefreshToken,
+  logout,
 };
