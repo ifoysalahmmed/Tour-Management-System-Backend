@@ -1,6 +1,8 @@
 import bcrypt from "bcryptjs";
 import status from "http-status";
+import type { JwtPayload } from "jsonwebtoken";
 
+import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
 import {
   generateAccessTokenFromRefreshToken,
@@ -66,7 +68,32 @@ const refreshAccessToken = async (refreshToken: string) => {
   return await generateAccessTokenFromRefreshToken(refreshToken);
 };
 
+const generateNewPassword = async (
+  oldPassword: string,
+  newPassword: string,
+  decodedToken: JwtPayload,
+) => {
+  const user = await UserModel.findById(decodedToken.id).select("+password");
+
+  const isOldPasswordMatched = await bcrypt.compare(
+    oldPassword,
+    user?.password as string,
+  );
+
+  if (!isOldPasswordMatched) {
+    throw new AppError(status.BAD_REQUEST, "Old password is incorrect");
+  }
+
+  user!.password = await bcrypt.hash(
+    newPassword,
+    Number(envVars.BCRYPT_SALT_ROUNDS),
+  );
+
+  await user!.save();
+};
+
 export const AuthServices = {
   loginWithCredentials,
   refreshAccessToken,
+  generateNewPassword,
 };

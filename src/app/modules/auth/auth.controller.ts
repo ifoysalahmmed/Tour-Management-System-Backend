@@ -1,4 +1,5 @@
 import status from "http-status";
+import type { JwtPayload } from "jsonwebtoken";
 
 import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
@@ -61,8 +62,27 @@ const logout = catchAsync(async (_req, res) => {
   });
 });
 
+const resetPassword = catchAsync(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
+  const decodedToken = req.user as JwtPayload;
+
+  await AuthServices.generateNewPassword(
+    oldPassword,
+    newPassword,
+    decodedToken,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Password reset successfully",
+    data: null,
+  });
+});
+
 export const AuthControllers = {
   loginWithCredentials,
   handleRefreshToken,
   logout,
+  resetPassword,
 };
