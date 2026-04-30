@@ -3,6 +3,8 @@ import cors from "cors";
 import express from "express";
 import type { Express, Request, Response } from "express";
 import status from "http-status";
+import passport from "passport";
+import expressSession from "express-session";
 
 import { envVars } from "./app/config/env.js";
 import errorHandler from "./app/middlewares/error.middleware.js";
@@ -13,10 +15,20 @@ import sendResponse from "./app/utils/sendResponse.js";
 const app: Express = express();
 
 // Middlewares
+app.use(
+  expressSession({
+    secret: envVars.EXPRESS_SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
+app.use(passport.initialize());
+app.use(passport.session());
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({ origin: envVars.ALLOWED_ORIGINS }));
-app.use(cookieParser());
+
 // Routes
 app.use("/api/v1", router);
 
