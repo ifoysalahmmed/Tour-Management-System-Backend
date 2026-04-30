@@ -6,6 +6,7 @@ import status from "http-status";
 import passport from "passport";
 import expressSession from "express-session";
 
+import "./app/config/passport.js";
 import { envVars } from "./app/config/env.js";
 import errorHandler from "./app/middlewares/error.middleware.js";
 import notFound from "./app/middlewares/notFound.middleware.js";

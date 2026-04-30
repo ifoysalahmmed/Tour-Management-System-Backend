@@ -60,3 +60,21 @@ passport.use(
     },
   ),
 );
+
+passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
+  done(null, user._id);
+});
+
+passport.deserializeUser(
+  async (
+    id: unknown,
+    done: (err: any, user?: false | Express.User | null | undefined) => void,
+  ) => {
+    try {
+      const user = await UserModel.findById(id);
+      done(null, user);
+    } catch (error) {
+      done(error, false);
+    }
+  },
+);

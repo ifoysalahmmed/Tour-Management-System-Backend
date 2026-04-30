@@ -5,7 +5,10 @@ import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import setCookies from "../../utils/setCookies.js";
+import { generateAuthTokens } from "../../utils/userAuthTokens.js";
+import type { TUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
+import { envVars } from "../../config/env.js";
 
 const loginWithCredentials = catchAsync(async (req, res) => {
   const loginResult = await AuthServices.loginWithCredentials(req.body);
@@ -80,9 +83,25 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
+const handleGoogleCallback = catchAsync(async (req, res) => {
+  const user = req.user as TUserInput;
+
+  console.log("user from google:", user);
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "Google authentication failed");
+  }
+
+  const token = generateAuthTokens(user);
+  setCookies(res, token);
+
+  res.redirect(envVars.FRONTEND_URL);
+});
+
 export const AuthControllers = {
   loginWithCredentials,
   handleRefreshToken,
   logout,
   resetPassword,
+  handleGoogleCallback,
 };
