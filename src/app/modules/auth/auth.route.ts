@@ -31,7 +31,12 @@ router.post(
 );
 
 router.get("/google", async (req: Request, res: Response) => {
-  passport.authenticate("google", { scope: ["profile", "email"] })(req, res);
+  const redirectURL = req.query.redirect || "/";
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state: redirectURL as string,
+  })(req, res);
 });
 
 router.get(

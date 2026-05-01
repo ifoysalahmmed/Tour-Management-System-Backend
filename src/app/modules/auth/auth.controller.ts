@@ -84,6 +84,12 @@ const resetPassword = catchAsync(async (req, res) => {
 });
 
 const handleGoogleCallback = catchAsync(async (req, res) => {
+  let redirectTo = req.query.state ? (req.query.state as string) : "";
+
+  if (redirectTo.startsWith("/")) {
+    redirectTo = redirectTo.slice(1);
+  }
+
   const user = req.user as TUserInput;
 
   console.log("user from google:", user);
@@ -95,7 +101,7 @@ const handleGoogleCallback = catchAsync(async (req, res) => {
   const token = generateAuthTokens(user);
   setCookies(res, token);
 
-  res.redirect(envVars.FRONTEND_URL);
+  res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
 });
 
 export const AuthControllers = {
