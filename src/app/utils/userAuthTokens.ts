@@ -33,33 +33,35 @@ export const generateAuthTokens = (user: TUserInput) => {
   return { accessToken, refreshToken };
 };
 
-export const generateAccessTokenFromRefreshToken = async (refreshToken: string) => {
+export const generateAccessTokenFromRefreshToken = async (
+  refreshToken: string,
+) => {
   const verifiedToken = await verifyAccessToken(
     refreshToken,
     envVars.JWT_REFRESH_SECRET,
   );
 
-  const isUserExist = await UserModel.findOne({
+  const user = await UserModel.findOne({
     email: verifiedToken.email,
   }).lean();
 
-  if (!isUserExist) {
+  if (!user) {
     throw new AppError(status.NOT_FOUND, "Invalid credentials");
   }
 
-  if (isUserExist.isActive === UserStatus.BLOCKED) {
+  if (user.isActive === UserStatus.BLOCKED) {
     throw new AppError(status.FORBIDDEN, "Your account has been blocked");
   }
 
-  if (isUserExist.isActive === UserStatus.INACTIVE) {
+  if (user.isActive === UserStatus.INACTIVE) {
     throw new AppError(status.FORBIDDEN, "Your account is inactive");
   }
 
-  if (isUserExist.isDeleted) {
+  if (user.isDeleted) {
     throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
   }
 
-  const { accessToken } = generateAuthTokens(isUserExist);
+  const { accessToken } = generateAuthTokens(user);
 
   return {
     accessToken,
