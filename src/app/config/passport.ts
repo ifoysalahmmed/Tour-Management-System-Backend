@@ -52,6 +52,8 @@ passport.use(
             message: "New user created via Google OAuth",
           });
         }
+
+        return done(null, user);
       } catch (error) {
         return done(error, false, {
           message: "Error occurred while processing Google OAuth",
