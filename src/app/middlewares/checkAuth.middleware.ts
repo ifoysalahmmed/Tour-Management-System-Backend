@@ -3,7 +3,8 @@ import status from "http-status";
 
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
-import type { UserRole } from "../modules/user/user.interface.js";
+import { UserStatus, type UserRole } from "../modules/user/user.interface.js";
+import { UserModel } from "../modules/user/user.model.js";
 import { verifyAccessToken } from "../utils/jwt.js";
 
 const checkAuth = (...allowedRoles: UserRole[]) => {
@@ -19,6 +20,26 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
         accessToken,
         envVars.JWT_SECRET as string,
       );
+
+      const user = await UserModel.findOne({
+        email: verifiedToken.email,
+      }).lean();
+
+      if (!user) {
+        throw new AppError(status.NOT_FOUND, "Invalid credentials");
+      }
+
+      if (user.isActive === UserStatus.BLOCKED) {
+        throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+      }
+
+      if (user.isActive === UserStatus.INACTIVE) {
+        throw new AppError(status.FORBIDDEN, "Your account is inactive");
+      }
+
+      if (user.isDeleted) {
+        throw new AppError(status.FORBIDDEN, "User account has been deleted");
+      }
 
       if (allowedRoles.length && !allowedRoles.includes(verifiedToken.role)) {
         throw new AppError(

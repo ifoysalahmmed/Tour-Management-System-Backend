@@ -17,7 +17,10 @@ const createUserIntoDB = async (
     password: string;
   };
 
-  const hashedPassword = bcrypt.hashSync(password, envVars.BCRYPT_SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hash(
+    password,
+    envVars.BCRYPT_SALT_ROUNDS,
+  );
 
   const authProvider: IAuthProvider = {
     provider: "credentials",
@@ -33,8 +36,10 @@ const createUserIntoDB = async (
 };
 
 const getAllUsersFromDB = async () => {
-  const users = await UserModel.find();
-  const total = await UserModel.countDocuments();
+  const [users, total] = await Promise.all([
+    UserModel.find(),
+    UserModel.countDocuments(),
+  ]); // Fetch users and total count in parallel
 
   return {
     users,
