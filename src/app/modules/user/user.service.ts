@@ -33,8 +33,10 @@ const createUserIntoDB = async (
 };
 
 const getAllUsersFromDB = async () => {
-  const users = await UserModel.find();
-  const total = await UserModel.countDocuments();
+  const [users, total] = await Promise.all([
+    UserModel.find(),
+    UserModel.countDocuments(),
+  ]); // Fetch users and total count in parallel
 
   return {
     users,
