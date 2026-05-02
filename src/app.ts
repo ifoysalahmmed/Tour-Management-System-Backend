@@ -21,6 +21,7 @@ app.use(
     secret: envVars.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    cookie: { maxAge: 5 * 60 * 1000 }, // 5 min — only needed during OAuth handshake
   }),
 );
 app.use(passport.initialize());
