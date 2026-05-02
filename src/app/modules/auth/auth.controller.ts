@@ -27,7 +27,7 @@ const handleRefreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
+    throw new AppError(status.UNAUTHORIZED, "Refresh token is missing");
   }
 
   const refreshedAccessToken = await AuthServices.refreshAccessToken(
@@ -60,7 +60,7 @@ const logout = catchAsync(async (_req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Logout successfully",
+    message: "Logged out successfully",
     data: null,
   });
 });
@@ -78,7 +78,7 @@ const resetPassword = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Password reset successfully",
+    message: "Password changed successfully",
     data: null,
   });
 });
