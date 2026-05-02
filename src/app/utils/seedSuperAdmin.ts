@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import bcrypt from "bcryptjs";
 import status from "http-status";
 
@@ -36,6 +37,7 @@ const seedSuperAdmin = async () => {
     await superAdmin.save();
     console.log("Super admin seeded successfully.");
   } catch (error) {
+    console.error("Error occurred while seeding super admin:", error);
     throw new AppError(
       status.INTERNAL_SERVER_ERROR,
       "Failed to seed super admin",

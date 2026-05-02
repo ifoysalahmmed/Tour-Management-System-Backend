@@ -4,10 +4,8 @@ import type { JwtPayload } from "jsonwebtoken";
 
 import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
-import {
-  generateAccessTokenFromRefreshToken,
-  generateAuthTokens,
-} from "../../utils/userAuthTokens.js";
+import { verifyAccessToken } from "../../utils/jwt.js";
+import { generateAuthTokens } from "../../utils/userAuthTokens.js";
 import type { IUser } from "../user/user.interface.js";
 import { UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
@@ -17,27 +15,28 @@ const loginWithCredentials = async (
 ) => {
   const { email, password } = payload;
 
-  const isUserExist = await UserModel.findOne({ email, isDeleted: false })
+  const user = await UserModel.findOne({ email, isDeleted: false })
     .select("+password")
     .lean();
 
-  if (!isUserExist) {
+  if (!user) {
     throw new AppError(status.NOT_FOUND, "Invalid credentials");
   }
 
-  if (isUserExist.isActive === UserStatus.BLOCKED) {
+  if (user.isActive === UserStatus.BLOCKED) {
     throw new AppError(status.FORBIDDEN, "Your account has been blocked");
   }
 
-  if (isUserExist.isActive === UserStatus.INACTIVE) {
+  if (user.isActive === UserStatus.INACTIVE) {
     throw new AppError(status.FORBIDDEN, "Your account is inactive");
   }
 
   // OAuth-only users have no password — reject credential login
-  const hasCredentialsProvider = isUserExist.auths.some(
+  const hasCredentialsProvider = user.auths.some(
     (auth) => auth.provider === "credentials",
   );
-  if (!hasCredentialsProvider || !isUserExist.password) {
+
+  if (!hasCredentialsProvider || !user.password) {
     throw new AppError(
       status.BAD_REQUEST,
       "This account uses a different sign-in method",
@@ -46,16 +45,16 @@ const loginWithCredentials = async (
 
   const isPasswordMatched = await bcrypt.compare(
     password as string,
-    isUserExist.password,
+    user.password,
   );
 
   if (!isPasswordMatched) {
     throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
   }
 
-  const { password: _password, ...safeUser } = isUserExist;
+  const { password: _password, ...safeUser } = user;
 
-  const { accessToken, refreshToken } = generateAuthTokens(isUserExist);
+  const { accessToken, refreshToken } = generateAuthTokens(user);
 
   return {
     accessToken,
@@ -65,19 +64,52 @@ const loginWithCredentials = async (
 };
 
 const refreshAccessToken = async (refreshToken: string) => {
-  return await generateAccessTokenFromRefreshToken(refreshToken);
+  const verifiedToken = await verifyAccessToken(
+    refreshToken,
+    envVars.JWT_REFRESH_SECRET,
+  );
+
+  const user = await UserModel.findOne({
+    email: verifiedToken.email,
+  }).lean();
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "Invalid credentials");
+  }
+
+  if (user.isActive === UserStatus.BLOCKED) {
+    throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+  }
+
+  if (user.isActive === UserStatus.INACTIVE) {
+    throw new AppError(status.FORBIDDEN, "Your account is inactive");
+  }
+
+  if (user.isDeleted) {
+    throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
+  }
+
+  const { accessToken } = generateAuthTokens(user);
+
+  return {
+    accessToken,
+  };
 };
 
-const generateNewPassword = async (
+const changePassword = async (
   oldPassword: string,
   newPassword: string,
   decodedToken: JwtPayload,
 ) => {
   const user = await UserModel.findById(decodedToken.id).select("+password");
 
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
   const isOldPasswordMatched = await bcrypt.compare(
     oldPassword,
-    user?.password as string,
+    user.password as string,
   );
 
   if (!isOldPasswordMatched) {
@@ -95,5 +127,5 @@ const generateNewPassword = async (
 export const AuthServices = {
   loginWithCredentials,
   refreshAccessToken,
-  generateNewPassword,
+  changePassword,
 };

@@ -21,24 +21,24 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
         envVars.JWT_SECRET as string,
       );
 
-      const isUserExist = await UserModel.findOne({
+      const user = await UserModel.findOne({
         email: verifiedToken.email,
       }).lean();
 
-      if (!isUserExist) {
+      if (!user) {
         throw new AppError(status.NOT_FOUND, "Invalid credentials");
       }
 
-      if (isUserExist.isActive === UserStatus.BLOCKED) {
+      if (user.isActive === UserStatus.BLOCKED) {
         throw new AppError(status.FORBIDDEN, "Your account has been blocked");
       }
 
-      if (isUserExist.isActive === UserStatus.INACTIVE) {
+      if (user.isActive === UserStatus.INACTIVE) {
         throw new AppError(status.FORBIDDEN, "Your account is inactive");
       }
 
-      if (isUserExist.isDeleted) {
-        throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
+      if (user.isDeleted) {
+        throw new AppError(status.FORBIDDEN, "User account has been deleted");
       }
 
       if (allowedRoles.length && !allowedRoles.includes(verifiedToken.role)) {

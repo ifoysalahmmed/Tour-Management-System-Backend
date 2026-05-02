@@ -1,4 +1,5 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
+import passport from "passport";
 
 import validateBody from "../../middlewares/validateBody.middleware.js";
 import checkAuth from "../../middlewares/checkAuth.middleware.js";
@@ -22,6 +23,21 @@ router.post(
   "/reset-password",
   checkAuth(...Object.values(UserRole)),
   AuthControllers.resetPassword,
+);
+
+router.get("/google", (req: Request, res: Response) => {
+  const redirectURL = req.query.redirect || "/";
+
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state: redirectURL as string,
+  })(req, res);
+});
+
+router.get(
+  "/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  AuthControllers.handleGoogleCallback,
 );
 
 export const AuthRoutes = router;

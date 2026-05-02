@@ -4,8 +4,11 @@ import type { JwtPayload } from "jsonwebtoken";
 import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
-import setCookies from "../../utils/setCookies.js";
+import setCookies, { cookieOptions } from "../../utils/setCookies.js";
+import { generateAuthTokens } from "../../utils/userAuthTokens.js";
+import type { TUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
+import { envVars } from "../../config/env.js";
 
 const loginWithCredentials = catchAsync(async (req, res) => {
   const loginResult = await AuthServices.loginWithCredentials(req.body);
@@ -24,7 +27,7 @@ const handleRefreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw new AppError(status.UNAUTHORIZED, "Invalid refresh token");
+    throw new AppError(status.UNAUTHORIZED, "Refresh token is missing");
   }
 
   const refreshedAccessToken = await AuthServices.refreshAccessToken(
@@ -42,22 +45,14 @@ const handleRefreshToken = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (_req, res) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
+  res.clearCookie("accessToken", cookieOptions);
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
+  res.clearCookie("refreshToken", cookieOptions);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Logout successfully",
+    message: "Logged out successfully",
     data: null,
   });
 });
@@ -66,18 +61,33 @@ const resetPassword = catchAsync(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
   const decodedToken = req.user as JwtPayload;
 
-  await AuthServices.generateNewPassword(
-    oldPassword,
-    newPassword,
-    decodedToken,
-  );
+  await AuthServices.changePassword(oldPassword, newPassword, decodedToken);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Password reset successfully",
+    message: "Password changed successfully",
     data: null,
   });
+});
+
+const handleGoogleCallback = catchAsync(async (req, res) => {
+  let redirectTo = req.query.state ? (req.query.state as string) : "";
+
+  if (redirectTo.startsWith("/")) {
+    redirectTo = redirectTo.slice(1);
+  }
+
+  const user = req.user as TUserInput;
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "Google authentication failed");
+  }
+
+  const token = generateAuthTokens(user);
+  setCookies(res, token);
+
+  res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
 });
 
 export const AuthControllers = {
@@ -85,4 +95,5 @@ export const AuthControllers = {
   handleRefreshToken,
   logout,
   resetPassword,
+  handleGoogleCallback,
 };
