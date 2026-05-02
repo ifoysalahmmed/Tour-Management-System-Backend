@@ -38,7 +38,7 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
       }
 
       if (user.isDeleted) {
-        throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
+        throw new AppError(status.FORBIDDEN, "User account has been deleted");
       }
 
       if (allowedRoles.length && !allowedRoles.includes(verifiedToken.role)) {

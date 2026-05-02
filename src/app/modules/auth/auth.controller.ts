@@ -4,7 +4,7 @@ import type { JwtPayload } from "jsonwebtoken";
 import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
-import setCookies from "../../utils/setCookies.js";
+import setCookies, { cookieOptions } from "../../utils/setCookies.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
 import type { TUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
@@ -45,17 +45,9 @@ const handleRefreshToken = catchAsync(async (req, res) => {
 });
 
 const logout = catchAsync(async (_req, res) => {
-  res.clearCookie("accessToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
+  res.clearCookie("accessToken", cookieOptions);
 
-  res.clearCookie("refreshToken", {
-    httpOnly: true,
-    secure: false,
-    sameSite: "lax",
-  });
+  res.clearCookie("refreshToken", cookieOptions);
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -87,8 +79,6 @@ const handleGoogleCallback = catchAsync(async (req, res) => {
   }
 
   const user = req.user as TUserInput;
-
-  console.log("user from google:", user);
 
   if (!user) {
     throw new AppError(status.NOT_FOUND, "Google authentication failed");

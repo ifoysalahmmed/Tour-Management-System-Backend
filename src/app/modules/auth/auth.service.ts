@@ -103,9 +103,13 @@ const changePassword = async (
 ) => {
   const user = await UserModel.findById(decodedToken.id).select("+password");
 
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
   const isOldPasswordMatched = await bcrypt.compare(
     oldPassword,
-    user?.password as string,
+    user.password as string,
   );
 
   if (!isOldPasswordMatched) {

@@ -1,13 +1,16 @@
 import type { Response } from "express";
 
+import { envVars } from "../config/env.js";
+
 interface AuthTokens {
   accessToken?: string;
   refreshToken?: string;
 }
 
-const cookieOptions = {
+export const cookieOptions = {
   httpOnly: true,
-  secure: false,
+  secure: envVars.NODE_ENV === "production",
+  sameSite: "lax" as const,
 };
 
 const setCookies = (res: Response, tokens: AuthTokens) => {
