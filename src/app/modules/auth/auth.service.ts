@@ -68,7 +68,7 @@ const refreshAccessToken = async (refreshToken: string) => {
   return await generateAccessTokenFromRefreshToken(refreshToken);
 };
 
-const generateNewPassword = async (
+const changePassword = async (
   oldPassword: string,
   newPassword: string,
   decodedToken: JwtPayload,
@@ -95,5 +95,5 @@ const generateNewPassword = async (
 export const AuthServices = {
   loginWithCredentials,
   refreshAccessToken,
-  generateNewPassword,
+  changePassword,
 };
