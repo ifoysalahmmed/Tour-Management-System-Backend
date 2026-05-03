@@ -6,62 +6,62 @@ import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
 import { verifyAccessToken } from "../../utils/jwt.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
-import type { IUser } from "../user/user.interface.js";
+// import type { IUser } from "../user/user.interface.js";
 import { UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
 
-const loginWithCredentials = async (
-  payload: Pick<IUser, "email" | "password">,
-) => {
-  const { email, password } = payload;
+// const loginWithCredentials = async (
+//   payload: Pick<IUser, "email" | "password">,
+// ) => {
+//   const { email, password } = payload;
 
-  const user = await UserModel.findOne({ email, isDeleted: false })
-    .select("+password")
-    .lean();
+//   const user = await UserModel.findOne({ email, isDeleted: false })
+//     .select("+password")
+//     .lean();
 
-  if (!user) {
-    throw new AppError(status.NOT_FOUND, "Invalid credentials");
-  }
+//   if (!user) {
+//     throw new AppError(status.NOT_FOUND, "Invalid credentials");
+//   }
 
-  if (user.isActive === UserStatus.BLOCKED) {
-    throw new AppError(status.FORBIDDEN, "Your account has been blocked");
-  }
+//   if (user.isActive === UserStatus.BLOCKED) {
+//     throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+//   }
 
-  if (user.isActive === UserStatus.INACTIVE) {
-    throw new AppError(status.FORBIDDEN, "Your account is inactive");
-  }
+//   if (user.isActive === UserStatus.INACTIVE) {
+//     throw new AppError(status.FORBIDDEN, "Your account is inactive");
+//   }
 
-  // OAuth-only users have no password — reject credential login
-  const hasCredentialsProvider = user.auths.some(
-    (auth) => auth.provider === "credentials",
-  );
+//   // OAuth-only users have no password — reject credential login
+//   const hasCredentialsProvider = user.auths.some(
+//     (auth) => auth.provider === "credentials",
+//   );
 
-  if (!hasCredentialsProvider || !user.password) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "This account uses a different sign-in method",
-    );
-  }
+//   if (!hasCredentialsProvider || !user.password) {
+//     throw new AppError(
+//       status.BAD_REQUEST,
+//       "This account uses a different sign-in method",
+//     );
+//   }
 
-  const isPasswordMatched = await bcrypt.compare(
-    password as string,
-    user.password,
-  );
+//   const isPasswordMatched = await bcrypt.compare(
+//     password as string,
+//     user.password,
+//   );
 
-  if (!isPasswordMatched) {
-    throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
-  }
+//   if (!isPasswordMatched) {
+//     throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
+//   }
 
-  const { password: _password, ...safeUser } = user;
+//   const { password: _password, ...safeUser } = user;
 
-  const { accessToken, refreshToken } = generateAuthTokens(user);
+//   const { accessToken, refreshToken } = generateAuthTokens(user);
 
-  return {
-    accessToken,
-    refreshToken,
-    user: safeUser,
-  };
-};
+//   return {
+//     accessToken,
+//     refreshToken,
+//     user: safeUser,
+//   };
+// };
 
 const refreshAccessToken = async (refreshToken: string) => {
   const verifiedToken = await verifyAccessToken(
@@ -125,7 +125,7 @@ const changePassword = async (
 };
 
 export const AuthServices = {
-  loginWithCredentials,
+  // loginWithCredentials,
   refreshAccessToken,
   changePassword,
 };

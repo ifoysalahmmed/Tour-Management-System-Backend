@@ -1,8 +1,8 @@
 import { Router, type Request, type Response } from "express";
 import passport from "passport";
 
-import validateBody from "../../middlewares/validateBody.middleware.js";
 import checkAuth from "../../middlewares/checkAuth.middleware.js";
+import validateBody from "../../middlewares/validateBody.middleware.js";
 import { UserRole } from "../user/user.interface.js";
 import { AuthControllers } from "./auth.controller.js";
 import { loginZodSchema } from "./auth.validation.js";
@@ -25,6 +25,8 @@ router.post(
   AuthControllers.resetPassword,
 );
 
+// /booking (can be any route) -> /login -> successful google login -> redirect to /booking (can be any route)
+// or, /login -> successful google login -> redirect to / (or some default page)
 router.get("/google", (req: Request, res: Response) => {
   const redirectURL = req.query.redirect || "/";
 
@@ -34,6 +36,8 @@ router.get("/google", (req: Request, res: Response) => {
   })(req, res);
 });
 
+// Google will redirect to this URL after successful authentication
+// api/v1/auth/google/callback?state=/booking (can be any route)
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),

@@ -1,13 +1,67 @@
+import bcrypt from "bcryptjs";
 import passport from "passport";
 import {
   Strategy as GoogleStrategy,
   type Profile,
   type VerifyCallback,
 } from "passport-google-oauth20";
+import { Strategy as LocalStrategy } from "passport-local";
 
-import { envVars } from "./env.js";
-import { UserModel } from "../modules/user/user.model.js";
 import { UserRole } from "../modules/user/user.interface.js";
+import { UserModel } from "../modules/user/user.model.js";
+import { envVars } from "./env.js";
+
+passport.use(
+  new LocalStrategy(
+    {
+      usernameField: "email",
+      passwordField: "password",
+    },
+    async (email, password, done) => {
+      try {
+        const user = await UserModel.findOne({ email, isDeleted: false })
+          .select("+password")
+          .lean();
+
+        console.log(user);
+
+        if (!user) {
+          return done(null, false, {
+            message: "User not found with the provided email",
+          });
+        }
+
+        const hasGoogleAuth = user.auths.some(
+          (auth) => auth.provider === "google",
+        );
+
+        if (hasGoogleAuth && !user.password) {
+          return done(null, false, {
+            message:
+              "This account uses Google OAuth for authentication. If you want to log in with email and password, please set up a password for your account.",
+          });
+        }
+
+        const isPasswordMatched = await bcrypt.compare(
+          password,
+          user.password as string,
+        );
+
+        if (!isPasswordMatched) {
+          return done(null, false, {
+            message: "Invalid credentials",
+          });
+        }
+
+        return done(null, user);
+      } catch (error) {
+        return done(error, false, {
+          message: "Error occurred while processing local authentication",
+        });
+      }
+    },
+  ),
+);
 
 passport.use(
   new GoogleStrategy(
@@ -17,8 +71,8 @@ passport.use(
       callbackURL: envVars.GOOGLE_CALLBACK_URL,
     },
     async (
-      accessToken: string,
-      refreshToken: string,
+      _accessToken: string,
+      _refreshToken: string,
       profile: Profile,
       done: VerifyCallback,
     ) => {
