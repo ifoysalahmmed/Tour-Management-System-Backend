@@ -1,18 +1,6 @@
 import { model, Schema } from "mongoose";
 
-import type { ITour, ITourType } from "./tour.interface.js";
-
-const tourTypeSchema = new Schema<ITourType>(
-  {
-    name: { type: String, required: true, unique: true },
-  },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
-);
-
-export const tourTypeModel = model<ITourType>("TourType", tourTypeSchema);
+import type { ITour } from "./tour.interface.js";
 
 const tourSchema = new Schema<ITour>(
   {
