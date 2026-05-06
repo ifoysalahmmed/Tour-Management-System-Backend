@@ -11,6 +11,16 @@ const createDivisionIntoDB = async (payload: IDivision) => {
   return await DivisionModel.create(divisionData);
 };
 
+const getAllDivisionsFromDB = async () => {
+  const [divisions, total] = await Promise.all([
+    DivisionModel.find(),
+    DivisionModel.countDocuments(),
+  ]);
+
+  return { divisions, total };
+};
+
 export const DivisionService = {
   createDivisionIntoDB,
+  getAllDivisionsFromDB,
 };
