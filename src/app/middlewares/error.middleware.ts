@@ -7,6 +7,23 @@ import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
 import sendResponse from "../utils/sendResponse.js";
 
+const handleDuplicateValueError = (res: Response, error: Error) => {
+  const duplicateValue =
+    Object.values(
+      (
+        error as unknown as {
+          errorResponse: { keyValue: Record<string, unknown> };
+        }
+      ).errorResponse?.keyValue ?? {},
+    )[0] ?? "value";
+
+  sendResponse(res, {
+    statusCode: status.CONFLICT,
+    success: false,
+    message: `Duplicate entry - ${duplicateValue} already exists`,
+  });
+};
+
 const errorHandler = (
   error: Error,
   _req: Request,
@@ -19,12 +36,13 @@ const errorHandler = (
     sendResponse(res, {
       statusCode: status.BAD_REQUEST,
       success: false,
-      message: "Zod Error",
+      message: "Validation Error",
       errorSources: error.issues.map((issue) => ({
         path: issue.path.reverse().join(" inside ") || "unknown",
         message: issue.message,
       })),
     });
+
     return;
   }
 
@@ -44,6 +62,7 @@ const errorHandler = (
       success: false,
       message: "Access token has expired",
     });
+
     return;
   }
 
@@ -53,31 +72,23 @@ const errorHandler = (
       success: false,
       message: "Invalid access token",
     });
+
     return;
   }
 
   if ("code" in error && (error as { code: number }).code === 11000) {
-    const duplicateValue =
-      Object.values(
-        (
-          error as unknown as {
-            errorResponse: { keyValue: Record<string, unknown> };
-          }
-        ).errorResponse?.keyValue ?? {},
-      )[0] ?? "value";
+    handleDuplicateValueError(res, error);
 
-    sendResponse(res, {
-      statusCode: status.CONFLICT,
-      success: false,
-      message: `Duplicate entry - ${duplicateValue} already exists`,
-    });
     return;
-  } else if (error.name === "CastError") {
+  }
+
+  if (error.name === "CastError") {
     sendResponse(res, {
       statusCode: status.BAD_REQUEST,
       success: false,
       message: "Invalid ID format",
     });
+
     return;
   }
 
