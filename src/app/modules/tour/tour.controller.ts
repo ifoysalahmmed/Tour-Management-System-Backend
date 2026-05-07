@@ -15,6 +15,26 @@ const createTour = catchAsync(async (req, res) => {
   });
 });
 
+const getAllTours = catchAsync(async (req, res) => {
+  const { page, limit, sortBy, sortOrder } = req.query;
+
+  const result = await TourServices.getAllToursFromDB({
+    ...(typeof page === "string" && { page: Number(page) }),
+    ...(typeof limit === "string" && { limit: Number(limit) }),
+    ...(typeof sortBy === "string" && { sortBy }),
+    ...((sortOrder === "asc" || sortOrder === "desc") && { sortOrder }),
+  });
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Tours retrieved successfully",
+    data: result.tours,
+    meta: result.meta,
+  });
+});
+
 export const TourControllers = {
   createTour,
+  getAllTours,
 };

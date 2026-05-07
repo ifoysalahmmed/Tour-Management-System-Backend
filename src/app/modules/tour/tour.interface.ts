@@ -18,3 +18,10 @@ export interface ITour {
   division: Types.ObjectId;
   tourType: Types.ObjectId;
 }
+
+export interface IGetAllToursQuery {
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+}

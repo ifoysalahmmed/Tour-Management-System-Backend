@@ -46,4 +46,6 @@ router.post(
   TourControllers.createTour,
 );
 
+router.get("/", TourControllers.getAllTours);
+
 export const TourRoutes = router;
