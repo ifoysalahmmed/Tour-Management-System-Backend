@@ -28,4 +28,10 @@ router.patch(
   TourTypeControllers.updateTourType,
 );
 
+router.delete(
+  "/tour-types/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  TourTypeControllers.deleteTourType,
+);
+
 export const TourRoutes = router;

@@ -27,8 +27,25 @@ const updateTourTypeIntoDB = async (id: string, payload: ITourType) => {
   return await tourTypeModel.findByIdAndUpdate(id, payload, { new: true });
 };
 
+const deleteTourTypeFromDB = async (id: string) => {
+  const targetTourType = await tourTypeModel.findById(id);
+
+  if (!targetTourType) {
+    throw new AppError(status.NOT_FOUND, "Tour type not found");
+  }
+
+  const isTourTypeUsed = await tourTypeModel.exists({ tourType: id });
+
+  if (isTourTypeUsed) {
+    throw new AppError(status.BAD_REQUEST, "Tour type is used in tours");
+  }
+
+  return await tourTypeModel.findByIdAndDelete(id);
+};
+
 export const TourTypeServices = {
   createTourTypeIntoDB,
   getAllTourTypesFromDB,
   updateTourTypeIntoDB,
+  deleteTourTypeFromDB,
 };
