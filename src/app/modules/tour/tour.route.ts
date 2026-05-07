@@ -15,4 +15,10 @@ router.post(
   TourTypeControllers.createTourType,
 );
 
+router.get(
+  "/tour-types",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  TourTypeControllers.getAllTourTypes,
+);
+
 export const TourRoutes = router;
