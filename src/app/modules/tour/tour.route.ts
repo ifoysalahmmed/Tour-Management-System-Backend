@@ -21,4 +21,11 @@ router.get(
   TourTypeControllers.getAllTourTypes,
 );
 
+router.patch(
+  "/tour-types/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  validateBody(createTourTypeZodSchema),
+  TourTypeControllers.updateTourType,
+);
+
 export const TourRoutes = router;
