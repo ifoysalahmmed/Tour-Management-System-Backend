@@ -12,4 +12,4 @@ const tourTypeSchema = new Schema<ITourType>(
   },
 );
 
-export const tourTypeModel = model<ITourType>("TourType", tourTypeSchema);
+export const TourTypeModel = model<ITourType>("TourType", tourTypeSchema);

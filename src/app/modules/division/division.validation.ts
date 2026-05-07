@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const divisionZodSchema = z
+export const createDivisionZodSchema = z
   .object({
     name: z
       .string({ error: "Name must be a string" })
@@ -17,4 +17,4 @@ export const divisionZodSchema = z
   })
   .strict();
 
-export const updateDivisionZodSchema = divisionZodSchema.partial();
+export const updateDivisionZodSchema = createDivisionZodSchema.partial();

@@ -8,3 +8,5 @@ export const createTourTypeZodSchema = z
       .max(50, "Name must be less than 50 characters"),
   })
   .strict();
+
+export const updateTourTypeZodSchema = createTourTypeZodSchema;

@@ -3,10 +3,13 @@ import { Router } from "express";
 import checkAuth from "../../middlewares/checkAuth.middleware.js";
 import validateBody from "../../middlewares/validateBody.middleware.js";
 import { TourTypeControllers } from "../tour-type/tourType.controller.js";
-import { createTourTypeZodSchema } from "../tour-type/tourType.validation.js";
+import {
+  createTourTypeZodSchema,
+  updateTourTypeZodSchema,
+} from "../tour-type/tourType.validation.js";
+import { UserRole } from "../user/user.interface.js";
 import { TourControllers } from "./tour.controller.js";
 import { createTourZodSchema } from "./tour.validation.js";
-import { UserRole } from "../user/user.interface.js";
 
 const router = Router();
 
@@ -26,7 +29,7 @@ router.get(
 router.patch(
   "/tour-types/:id",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
-  validateBody(createTourTypeZodSchema),
+  validateBody(updateTourTypeZodSchema),
   TourTypeControllers.updateTourType,
 );
 

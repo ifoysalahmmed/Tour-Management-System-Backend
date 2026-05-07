@@ -2,9 +2,9 @@ import status from "http-status";
 
 import { AppError } from "../../errors/app.error.js";
 import { DivisionModel } from "../division/division.model.js";
-import { tourTypeModel } from "../tour-type/tourType.model.js";
+import { TourTypeModel } from "../tour-type/tourType.model.js";
 import type { ITour } from "./tour.interface.js";
-import { tourModel } from "./tour.model.js";
+import { TourModel } from "./tour.model.js";
 
 const createTourIntoDB = async (payload: Partial<ITour>) => {
   const { title, division, tourType } = payload as ITour;
@@ -15,7 +15,7 @@ const createTourIntoDB = async (payload: Partial<ITour>) => {
     throw new AppError(status.NOT_FOUND, "Invalid division ID");
   }
 
-  const isTourTypeExists = await tourTypeModel.exists({ _id: tourType });
+  const isTourTypeExists = await TourTypeModel.exists({ _id: tourType });
 
   if (!isTourTypeExists) {
     throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
@@ -25,7 +25,7 @@ const createTourIntoDB = async (payload: Partial<ITour>) => {
 
   const newTour = { ...payload, slug } as ITour;
 
-  return await tourModel.create(newTour);
+  return await TourModel.create(newTour);
 };
 
 export const TourServices = {

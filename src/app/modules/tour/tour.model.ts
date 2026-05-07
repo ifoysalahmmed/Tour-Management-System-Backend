@@ -34,4 +34,4 @@ const tourSchema = new Schema<ITour>(
   { timestamps: true, versionKey: false },
 );
 
-export const tourModel = model<ITour>("Tour", tourSchema);
+export const TourModel = model<ITour>("Tour", tourSchema);
