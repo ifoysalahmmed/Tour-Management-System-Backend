@@ -2,10 +2,10 @@ import status from "http-status";
 
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
-import { DivisionService } from "./division.service.js";
+import { DivisionServices } from "./division.service.js";
 
 const createDivision = catchAsync(async (req, res) => {
-  const result = await DivisionService.createDivisionIntoDB(req.body);
+  const result = await DivisionServices.createDivisionIntoDB(req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,
@@ -16,7 +16,7 @@ const createDivision = catchAsync(async (req, res) => {
 });
 
 const getAllDivisions = catchAsync(async (req, res) => {
-  const result = await DivisionService.getAllDivisionsFromDB();
+  const result = await DivisionServices.getAllDivisionsFromDB();
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -29,7 +29,7 @@ const getAllDivisions = catchAsync(async (req, res) => {
 const updateDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await DivisionService.updateDivisionIntoDB(
+  const result = await DivisionServices.updateDivisionIntoDB(
     id as string,
     req.body,
   );
@@ -45,7 +45,7 @@ const updateDivision = catchAsync(async (req, res) => {
 const deleteDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  await DivisionService.deleteDivisionFromDB(id as string);
+  await DivisionServices.deleteDivisionFromDB(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,

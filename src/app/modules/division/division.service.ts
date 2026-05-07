@@ -65,7 +65,7 @@ const deleteDivisionFromDB = async (id: string) => {
   return await DivisionModel.findByIdAndDelete(id);
 };
 
-export const DivisionService = {
+export const DivisionServices = {
   createDivisionIntoDB,
   getAllDivisionsFromDB,
   updateDivisionIntoDB,
