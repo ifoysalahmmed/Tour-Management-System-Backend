@@ -1,28 +1,16 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import jwt from "jsonwebtoken";
+import type { Error as MongooseError } from "mongoose";
 import * as z from "zod";
 
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
+import {
+  handleDuplicateValueError,
+  handleValidationError,
+} from "../errors/mongoose.error.js";
 import sendResponse from "../utils/sendResponse.js";
-
-const handleDuplicateValueError = (res: Response, error: Error) => {
-  const duplicateValue =
-    Object.values(
-      (
-        error as unknown as {
-          errorResponse: { keyValue: Record<string, unknown> };
-        }
-      ).errorResponse?.keyValue ?? {},
-    )[0] ?? "value";
-
-  sendResponse(res, {
-    statusCode: status.CONFLICT,
-    success: false,
-    message: `Duplicate entry - ${duplicateValue} already exists`,
-  });
-};
 
 const errorHandler = (
   error: Error,
@@ -43,6 +31,11 @@ const errorHandler = (
       })),
     });
 
+    return;
+  }
+
+  if (error.name === "ValidationError") {
+    handleValidationError(res, error as MongooseError.ValidationError);
     return;
   }
 
@@ -78,7 +71,6 @@ const errorHandler = (
 
   if ("code" in error && (error as { code: number }).code === 11000) {
     handleDuplicateValueError(res, error);
-
     return;
   }
 
