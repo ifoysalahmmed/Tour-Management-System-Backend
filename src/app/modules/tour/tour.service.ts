@@ -51,7 +51,30 @@ const getAllToursFromDB = async (query: IGetAllToursQuery) => {
   };
 };
 
+const updateTourIntoDB = async (payload: Partial<ITour>) => {
+  const { title, division, tourType } = payload as ITour;
+
+  const isDivisionExists = await DivisionModel.exists({ _id: division });
+
+  if (!isDivisionExists) {
+    throw new AppError(status.NOT_FOUND, "Invalid division ID");
+  }
+
+  const isTourTypeExists = await TourTypeModel.exists({ _id: tourType });
+
+  if (!isTourTypeExists) {
+    throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
+  }
+
+  const slug = title.toLowerCase().replace(/\s+/g, "-");
+
+  const newTour = { ...payload, slug } as ITour;
+
+  return await TourModel.create(newTour);
+};
+
 export const TourServices = {
   createTourIntoDB,
   getAllToursFromDB,
+  updateTourIntoDB,
 };
