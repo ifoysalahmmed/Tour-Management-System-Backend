@@ -24,6 +24,16 @@ const getAllDivisionsFromDB = async () => {
   return { divisions, total };
 };
 
+const getDivisionBySlugFromDB = async (slug: string) => {
+  const division = await DivisionModel.findOne({ slug });
+
+  if (!division) {
+    throw new AppError(status.NOT_FOUND, "Division not found");
+  }
+
+  return division;
+};
+
 const updateDivisionIntoDB = async (
   id: string,
   payload: Partial<IDivision>,
@@ -46,7 +56,10 @@ const updateDivisionIntoDB = async (
   const slug = name.toLowerCase().replace(/\s+/g, "-");
   const divisionData = { ...payload, slug };
 
-  return await DivisionModel.findByIdAndUpdate(id, divisionData, { new: true });
+  return await DivisionModel.findByIdAndUpdate(id, divisionData, {
+    new: true,
+    runValidators: true,
+  });
 };
 
 const deleteDivisionFromDB = async (id: string) => {
@@ -68,6 +81,7 @@ const deleteDivisionFromDB = async (id: string) => {
 export const DivisionServices = {
   createDivisionIntoDB,
   getAllDivisionsFromDB,
+  getDivisionBySlugFromDB,
   updateDivisionIntoDB,
   deleteDivisionFromDB,
 };

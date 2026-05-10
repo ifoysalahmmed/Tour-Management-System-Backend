@@ -15,13 +15,26 @@ const createDivision = catchAsync(async (req, res) => {
   });
 });
 
-const getAllDivisions = catchAsync(async (req, res) => {
+const getAllDivisions = catchAsync(async (_req, res) => {
   const result = await DivisionServices.getAllDivisionsFromDB();
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Divisions retrieved successfully",
+    data: result,
+  });
+});
+
+const getADivision = catchAsync(async (req, res) => {
+  const { slug } = req.params;
+
+  const result = await DivisionServices.getDivisionBySlugFromDB(slug as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Division retrieved successfully",
     data: result,
   });
 });
@@ -57,6 +70,7 @@ const deleteDivision = catchAsync(async (req, res) => {
 export const DivisionControllers = {
   createDivision,
   getAllDivisions,
+  getADivision,
   updateDivision,
   deleteDivision,
 };
