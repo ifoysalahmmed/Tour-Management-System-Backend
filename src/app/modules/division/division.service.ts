@@ -8,9 +8,11 @@ import { DivisionModel } from "./division.model.js";
 const createDivisionIntoDB = async (payload: IDivision) => {
   const { name } = payload;
 
-  const slug = name.toLowerCase().replace(/\s+/g, "-");
+  const slug = `${name.toLowerCase().replace(/\s+/g, "-")}-division`;
 
   const divisionData = { ...payload, slug };
+
+  console.log("divisionData", divisionData);
 
   return await DivisionModel.create(divisionData);
 };
@@ -53,7 +55,8 @@ const updateDivisionIntoDB = async (
     );
   }
 
-  const slug = name.toLowerCase().replace(/\s+/g, "-");
+  const slug = `${name.toLowerCase().replace(/\s+/g, "-")}-division`;
+
   const divisionData = { ...payload, slug };
 
   return await DivisionModel.findByIdAndUpdate(id, divisionData, {
