@@ -7,7 +7,7 @@ import type { IGetAllToursQuery, ITour } from "./tour.interface.js";
 import { TourModel } from "./tour.model.js";
 
 const createTourIntoDB = async (payload: Partial<ITour>) => {
-  const { title, division, tourType } = payload as ITour;
+  const { division, tourType } = payload as ITour;
 
   const isDivisionExists = await DivisionModel.exists({ _id: division });
 
@@ -21,15 +21,7 @@ const createTourIntoDB = async (payload: Partial<ITour>) => {
     throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
   }
 
-  const slug = `${title
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")}-tour`;
-
-  const newTour = { ...payload, slug };
-
-  return await TourModel.create(newTour);
+  return await TourModel.create(payload);
 };
 
 const getAllToursFromDB = async (query: IGetAllToursQuery) => {
@@ -94,17 +86,7 @@ const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
     }
   }
 
-  const updateData = { ...payload };
-
-  if (payload.title) {
-    updateData.slug = `${payload.title
-      .trim()
-      .toLowerCase()
-      .replace(/[^a-z0-9\s-]/g, "")
-      .replace(/\s+/g, "-")}-tour`;
-  }
-
-  return await TourModel.findByIdAndUpdate(id, updateData, {
+  return await TourModel.findByIdAndUpdate(id, payload, {
     returnDocument: "after",
     runValidators: true,
   });

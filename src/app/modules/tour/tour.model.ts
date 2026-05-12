@@ -51,4 +51,26 @@ const tourSchema = new Schema<ITour>(
 
 tourSchema.index({ division: 1, tourType: 1 });
 
+tourSchema.pre("validate", function () {
+  if (this.isModified("title")) {
+    this.slug = `${this.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")}-tour`;
+  }
+});
+
+tourSchema.pre("findOneAndUpdate", function () {
+  const targetTour = this.getUpdate() as Partial<ITour>;
+
+  if (targetTour.title) {
+    targetTour.slug = `${targetTour.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")}-tour`;
+  }
+});
+
 export const TourModel = model<ITour>("Tour", tourSchema);

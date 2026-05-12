@@ -50,13 +50,12 @@ const updateTour = catchAsync(async (req, res) => {
 const deleteTour = catchAsync(async (req, res) => {
   const { id } = req.params;
 
-  const result = await TourServices.deleteTourFromDB(id as string);
+  await TourServices.deleteTourFromDB(id as string);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Tour deleted successfully",
-    data: result,
   });
 });
 
