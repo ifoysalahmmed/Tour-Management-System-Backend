@@ -15,9 +15,23 @@ export const createTourZodSchema = z
 
     costFrom: z.number("Cost from must be a number").optional(),
 
-    startDate: z.date("Start date must be a valid date").optional(),
+    startDate: z.coerce
+      .date({ message: "Start date must be a valid date" })
+      .optional(),
 
-    endDate: z.date("End date must be a valid date").optional(),
+    endDate: z.coerce
+      .date({ message: "End date must be a valid date" })
+      .optional(),
+
+    departureLocation: z
+      .string("Departure location must be a string")
+      .max(150, "Departure location must be less than 150 characters long")
+      .optional(),
+
+    arrivalLocation: z
+      .string("Arrival location must be a string")
+      .max(150, "Arrival location must be less than 150 characters long")
+      .optional(),
 
     included: z
       .array(z.string("Each included item must be a string"))

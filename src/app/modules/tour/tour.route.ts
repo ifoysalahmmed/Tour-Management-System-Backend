@@ -9,7 +9,7 @@ import {
 } from "../tour-type/tourType.validation.js";
 import { UserRole } from "../user/user.interface.js";
 import { TourControllers } from "./tour.controller.js";
-import { createTourZodSchema } from "./tour.validation.js";
+import { createTourZodSchema, updateTourZodSchema } from "./tour.validation.js";
 
 const router = Router();
 
@@ -47,5 +47,18 @@ router.post(
 );
 
 router.get("/", TourControllers.getAllTours);
+
+router.patch(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  validateBody(updateTourZodSchema),
+  TourControllers.updateTour,
+);
+
+router.delete(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  TourControllers.deleteTour,
+);
 
 export const TourRoutes = router;

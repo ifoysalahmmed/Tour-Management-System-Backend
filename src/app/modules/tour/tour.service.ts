@@ -21,9 +21,13 @@ const createTourIntoDB = async (payload: Partial<ITour>) => {
     throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
   }
 
-  const slug = title.toLowerCase().replace(/\s+/g, "-");
+  const slug = `${title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")}-tour`;
 
-  const newTour = { ...payload, slug } as ITour;
+  const newTour = { ...payload, slug };
 
   return await TourModel.create(newTour);
 };
@@ -51,30 +55,74 @@ const getAllToursFromDB = async (query: IGetAllToursQuery) => {
   };
 };
 
-const updateTourIntoDB = async (payload: Partial<ITour>) => {
-  const { title, division, tourType } = payload as ITour;
+const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
+  const targetTour = await TourModel.findById(id);
 
-  const isDivisionExists = await DivisionModel.exists({ _id: division });
-
-  if (!isDivisionExists) {
-    throw new AppError(status.NOT_FOUND, "Invalid division ID");
+  if (!targetTour) {
+    throw new AppError(status.NOT_FOUND, "Tour not found");
   }
 
-  const isTourTypeExists = await TourTypeModel.exists({ _id: tourType });
+  if (payload.division) {
+    const isDivisionExists = await DivisionModel.exists({
+      _id: payload.division,
+    });
 
-  if (!isTourTypeExists) {
-    throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
+    if (!isDivisionExists) {
+      throw new AppError(status.NOT_FOUND, "Invalid division ID");
+    }
   }
 
-  const slug = title.toLowerCase().replace(/\s+/g, "-");
+  if (payload.tourType) {
+    const isTourTypeExists = await TourTypeModel.exists({
+      _id: payload.tourType,
+    });
 
-  const newTour = { ...payload, slug } as ITour;
+    if (!isTourTypeExists) {
+      throw new AppError(status.NOT_FOUND, "Invalid tour type ID");
+    }
+  }
 
-  return await TourModel.create(newTour);
+  if (payload.endDate) {
+    const startDate = payload.startDate ?? targetTour.startDate;
+    const endDate = payload.endDate;
+
+    if (startDate && endDate < startDate) {
+      throw new AppError(
+        status.BAD_REQUEST,
+        "End date cannot be before start date",
+      );
+    }
+  }
+
+  const updateData = { ...payload };
+
+  if (payload.title) {
+    updateData.slug = `${payload.title
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")}-tour`;
+  }
+
+  return await TourModel.findByIdAndUpdate(id, updateData, {
+    returnDocument: "after",
+    runValidators: true,
+  });
+};
+
+const deleteTourFromDB = async (id: string) => {
+  const targetTour = await TourModel.findById(id);
+
+  if (!targetTour) {
+    throw new AppError(status.NOT_FOUND, "Tour not found");
+  }
+
+  return await TourModel.findByIdAndDelete(id);
 };
 
 export const TourServices = {
   createTourIntoDB,
   getAllToursFromDB,
   updateTourIntoDB,
+  deleteTourFromDB,
 };

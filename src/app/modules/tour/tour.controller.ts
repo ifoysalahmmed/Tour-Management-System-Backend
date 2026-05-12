@@ -34,7 +34,35 @@ const getAllTours = catchAsync(async (req, res) => {
   });
 });
 
+const updateTour = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await TourServices.updateTourIntoDB(id as string, req.body);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Tour updated successfully",
+    data: result,
+  });
+});
+
+const deleteTour = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await TourServices.deleteTourFromDB(id as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Tour deleted successfully",
+    data: result,
+  });
+});
+
 export const TourControllers = {
   createTour,
   getAllTours,
+  updateTour,
+  deleteTour,
 };
