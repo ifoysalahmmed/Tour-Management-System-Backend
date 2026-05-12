@@ -12,4 +12,24 @@ const divisionSchema = new Schema<IDivision>(
   { timestamps: true, versionKey: false },
 );
 
+divisionSchema.pre("validate", function () {
+  if (this.isModified("name")) {
+    this.slug = `${this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")}-division`;
+  }
+});
+
+divisionSchema.pre("findOneAndUpdate", function () {
+  const targetDivision = this.getUpdate() as Partial<IDivision>;
+
+  if (targetDivision.name) {
+    targetDivision.slug = `${targetDivision.name
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, "")
+      .replace(/\s+/g, "-")}-division`;
+  }
+});
+
 export const DivisionModel = model<IDivision>("Division", divisionSchema);

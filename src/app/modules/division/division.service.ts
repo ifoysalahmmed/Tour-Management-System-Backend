@@ -6,15 +6,7 @@ import type { IDivision } from "./division.interface.js";
 import { DivisionModel } from "./division.model.js";
 
 const createDivisionIntoDB = async (payload: IDivision) => {
-  const { name } = payload;
-
-  const slug = `${name.toLowerCase().replace(/\s+/g, "-")}-division`;
-
-  const divisionData = { ...payload, slug };
-
-  console.log("divisionData", divisionData);
-
-  return await DivisionModel.create(divisionData);
+  return await DivisionModel.create(payload);
 };
 
 const getAllDivisionsFromDB = async () => {
@@ -46,20 +38,7 @@ const updateDivisionIntoDB = async (
     throw new AppError(status.NOT_FOUND, "Division not found");
   }
 
-  const { name } = payload;
-
-  if (!name) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Name is required for updating division",
-    );
-  }
-
-  const slug = `${name.toLowerCase().replace(/\s+/g, "-")}-division`;
-
-  const divisionData = { ...payload, slug };
-
-  return await DivisionModel.findByIdAndUpdate(id, divisionData, {
+  return await DivisionModel.findByIdAndUpdate(id, payload, {
     new: true,
     runValidators: true,
   });
