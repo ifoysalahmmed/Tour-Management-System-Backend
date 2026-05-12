@@ -5,12 +5,18 @@ import { UserRole, UserStatus } from "./user.interface.js";
 
 const userSchema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
+    name: { type: String, required: true, trim: true },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+    },
     password: { type: String, select: false },
-    phone: { type: String },
-    picture: { type: String },
-    address: { type: String },
+    phone: { type: String, trim: true },
+    picture: { type: String, trim: true },
+    address: { type: String, trim: true },
     isDeleted: { type: Boolean, default: false },
     isActive: {
       type: String,
@@ -26,7 +32,11 @@ const userSchema = new Schema<IUser>(
     auths: [
       {
         _id: false,
-        provider: { type: String, required: true },
+        provider: {
+          type: String,
+          required: true,
+          enum: ["google", "credentials"],
+        },
         providerId: { type: String, required: true },
       },
     ],
