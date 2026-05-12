@@ -4,10 +4,10 @@ import type { IDivision } from "./division.interface.js";
 
 const divisionSchema = new Schema<IDivision>(
   {
-    name: { type: String, required: true, unique: true },
-    slug: { type: String, required: true, unique: true },
-    thumbnail: { type: String },
-    description: { type: String },
+    name: { type: String, required: true, unique: true, trim: true },
+    slug: { type: String, required: true, unique: true, trim: true },
+    thumbnail: { type: String, trim: true },
+    description: { type: String, trim: true },
   },
   { timestamps: true, versionKey: false },
 );
@@ -15,6 +15,7 @@ const divisionSchema = new Schema<IDivision>(
 divisionSchema.pre("validate", function () {
   if (this.isModified("name")) {
     this.slug = `${this.name
+      .trim()
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")}-division`;
@@ -26,6 +27,7 @@ divisionSchema.pre("findOneAndUpdate", function () {
 
   if (targetDivision.name) {
     targetDivision.slug = `${targetDivision.name
+      .trim()
       .toLowerCase()
       .replace(/[^a-z0-9\s-]/g, "")
       .replace(/\s+/g, "-")}-division`;
