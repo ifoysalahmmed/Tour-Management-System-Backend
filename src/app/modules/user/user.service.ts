@@ -47,7 +47,7 @@ const getAllUsersFromDB = async () => {
   };
 };
 
-const updateUserInDB = async (
+const updateUserIntoDB = async (
   userId: string,
   payload: Partial<IUser>,
   decodedToken: JwtPayload,
@@ -144,5 +144,5 @@ const updateUserInDB = async (
 export const UserServices = {
   createUserIntoDB,
   getAllUsersFromDB,
-  updateUserInDB,
+  updateUserIntoDB,
 };

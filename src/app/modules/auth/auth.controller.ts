@@ -1,6 +1,8 @@
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
+import passport from "passport";
 
+import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
@@ -8,19 +10,49 @@ import setCookies, { cookieOptions } from "../../utils/setCookies.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
 import type { TUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
-import { envVars } from "../../config/env.js";
 
-const loginWithCredentials = catchAsync(async (req, res) => {
-  const loginResult = await AuthServices.loginWithCredentials(req.body);
+const loginWithCredentials = catchAsync(async (req, res, next) => {
+  // const loginResult = await AuthServices.loginWithCredentials(req.body);
 
-  setCookies(res, loginResult);
+  passport.authenticate(
+    "local",
+    async (err: any, user: any, info: { message: string }) => {
+      if (err) {
+        return next(
+          new AppError(
+            status.UNAUTHORIZED,
+            info.message || "Authentication failed",
+          ),
+        );
+      }
 
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Logged in successfully",
-    data: loginResult,
-  });
+      if (!user) {
+        return next(
+          new AppError(
+            status.UNAUTHORIZED,
+            info.message || "Invalid credentials",
+          ),
+        );
+      }
+
+      const { password: _password, ...safeUser } = user;
+
+      const tokens = generateAuthTokens(user);
+
+      setCookies(res, tokens);
+
+      sendResponse(res, {
+        statusCode: status.OK,
+        success: true,
+        message: "Logged in successfully",
+        data: {
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+          user: safeUser,
+        },
+      });
+    },
+  )(req, res, next);
 });
 
 const handleRefreshToken = catchAsync(async (req, res) => {

@@ -33,7 +33,7 @@ const updateUser = catchAsync(async (req, res) => {
   const updateData = req.body;
   const decodedToken = req.user as JwtPayload;
 
-  const result = await UserServices.updateUserInDB(
+  const result = await UserServices.updateUserIntoDB(
     id as string,
     updateData,
     decodedToken,

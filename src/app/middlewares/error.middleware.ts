@@ -1,9 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import jwt from "jsonwebtoken";
+import type { Error as MongooseError } from "mongoose";
+import * as z from "zod";
 
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
+import {
+  handleDuplicateValueError,
+  handleValidationError,
+} from "../errors/mongoose.error.js";
 import sendResponse from "../utils/sendResponse.js";
 
 const errorHandler = (
@@ -13,6 +19,25 @@ const errorHandler = (
   _next: NextFunction,
 ): void => {
   const isDevelopment = envVars.NODE_ENV === "development";
+
+  if (error instanceof z.ZodError) {
+    sendResponse(res, {
+      statusCode: status.BAD_REQUEST,
+      success: false,
+      message: "Validation Error",
+      errorSources: error.issues.map((issue) => ({
+        path: issue.path.reverse().join(" inside ") || "unknown",
+        message: issue.message,
+      })),
+    });
+
+    return;
+  }
+
+  if (error.name === "ValidationError") {
+    handleValidationError(res, error as MongooseError.ValidationError);
+    return;
+  }
 
   if (error instanceof AppError) {
     sendResponse(res, {
@@ -30,6 +55,7 @@ const errorHandler = (
       success: false,
       message: "Access token has expired",
     });
+
     return;
   }
 
@@ -39,15 +65,22 @@ const errorHandler = (
       success: false,
       message: "Invalid access token",
     });
+
     return;
   }
 
   if ("code" in error && (error as { code: number }).code === 11000) {
+    handleDuplicateValueError(res, error);
+    return;
+  }
+
+  if (error.name === "CastError") {
     sendResponse(res, {
-      statusCode: status.CONFLICT,
+      statusCode: status.BAD_REQUEST,
       success: false,
-      message: "Duplicate entry — record already exists",
+      message: "Invalid ID format",
     });
+
     return;
   }
 
