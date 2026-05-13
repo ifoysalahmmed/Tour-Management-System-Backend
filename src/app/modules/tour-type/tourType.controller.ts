@@ -15,7 +15,7 @@ const createTourType = catchAsync(async (req, res) => {
   });
 });
 
-const getAllTourTypes = catchAsync(async (req, res) => {
+const getAllTourTypes = catchAsync(async (_req, res) => {
   const result = await TourTypeServices.getAllTourTypesFromDB();
 
   sendResponse(res, {
