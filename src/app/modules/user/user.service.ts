@@ -4,6 +4,8 @@ import type { JwtPayload } from "jsonwebtoken";
 
 import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
+import { QueryBuilder } from "../../utils/QueryBuilder.js";
+import { userSearchableFields } from "./user.constant.js";
 import type { IAuthProvider, IUser } from "./user.interface.js";
 import { UserRole, UserStatus } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
@@ -35,15 +37,24 @@ const createUserIntoDB = async (
   });
 };
 
-const getAllUsersFromDB = async () => {
-  const [users, total] = await Promise.all([
-    UserModel.find(),
-    UserModel.countDocuments(),
-  ]); // Fetch users and total count in parallel
+const getAllUsersFromDB = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(UserModel.find(), query);
+
+  const data = queryBuilder
+    .search(userSearchableFields)
+    .filter()
+    .sort()
+    .select()
+    .paginate();
+
+  const [users, meta] = await Promise.all([
+    data.modelQuery,
+    queryBuilder.getMetaData(),
+  ]);
 
   return {
     users,
-    total: { total },
+    meta,
   };
 };
 
