@@ -11,17 +11,13 @@ export const createTourZodSchema = z
 
     images: z.array(z.string("Each image must be a string")).optional(),
 
-    location: z.string("Location must be a string").optional(),
+    location: z.string("Location must be a string"),
 
-    costFrom: z.number("Cost from must be a number").optional(),
+    costFrom: z.number("Cost from must be a number"),
 
-    startDate: z.coerce
-      .date({ message: "Start date must be a valid date" })
-      .optional(),
+    startDate: z.coerce.date({ message: "Start date must be a valid date" }),
 
-    endDate: z.coerce
-      .date({ message: "End date must be a valid date" })
-      .optional(),
+    endDate: z.coerce.date({ message: "End date must be a valid date" }),
 
     departureLocation: z
       .string("Departure location must be a string")
