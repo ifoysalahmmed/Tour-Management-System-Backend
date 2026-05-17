@@ -23,8 +23,6 @@ passport.use(
           .select("+password")
           .lean();
 
-        console.log(user);
-
         if (!user) {
           return done(null, false, {
             message: "User not found with the provided email",

@@ -8,12 +8,10 @@ import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import setCookies, { cookieOptions } from "../../utils/setCookies.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
-import type { TUserInput } from "./auth.interface.js";
+import type { IUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
 
 const loginWithCredentials = catchAsync(async (req, res, next) => {
-  // const loginResult = await AuthServices.loginWithCredentials(req.body);
-
   passport.authenticate(
     "local",
     async (err: any, user: any, info: { message: string }) => {
@@ -78,7 +76,6 @@ const handleRefreshToken = catchAsync(async (req, res) => {
 
 const logout = catchAsync(async (_req, res) => {
   res.clearCookie("accessToken", cookieOptions);
-
   res.clearCookie("refreshToken", cookieOptions);
 
   sendResponse(res, {
@@ -110,7 +107,7 @@ const handleGoogleCallback = catchAsync(async (req, res) => {
     redirectTo = redirectTo.slice(1);
   }
 
-  const user = req.user as TUserInput;
+  const user = req.user as IUserInput;
 
   if (!user) {
     throw new AppError(status.NOT_FOUND, "Google authentication failed");
