@@ -69,12 +69,12 @@ export class QueryBuilder<T> {
     return this;
   }
 
-  populate(...fields: string[]): this {
-    this.modelQuery = this.modelQuery.populate(fields.join(" "));
+  populate(fields: string): this {
+    this.modelQuery = this.modelQuery.populate(fields);
     return this;
   }
 
-  async countTotal() {
+  async getMetaData() {
     const { page, limit } = this.getPageAndLimit();
     const total = await this.modelQuery.model
       .find(this.modelQuery.getFilter())

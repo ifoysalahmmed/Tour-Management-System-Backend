@@ -1,10 +1,10 @@
 import jwt from "jsonwebtoken";
 import type { SignOptions } from "jsonwebtoken";
 
-import type { TTokenPayload } from "../modules/auth/auth.interface.js";
+import type { ITokenPayload } from "../modules/auth/auth.interface.js";
 
 export const generateAccessToken = (
-  payload: TTokenPayload,
+  payload: ITokenPayload,
   secret: string,
   expiresIn: NonNullable<SignOptions["expiresIn"]>,
 ) => {
@@ -12,5 +12,5 @@ export const generateAccessToken = (
 };
 
 export const verifyAccessToken = (token: string, secret: string) => {
-  return jwt.verify(token, secret) as TTokenPayload;
+  return jwt.verify(token, secret) as ITokenPayload;
 };
