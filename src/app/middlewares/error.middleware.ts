@@ -30,7 +30,6 @@ const errorHandler = (
         message: issue.message,
       })),
     });
-
     return;
   }
 
@@ -45,7 +44,6 @@ const errorHandler = (
       success: false,
       message: error.message,
     });
-
     return;
   }
 
@@ -55,7 +53,6 @@ const errorHandler = (
       success: false,
       message: "Access token has expired",
     });
-
     return;
   }
 
@@ -65,7 +62,6 @@ const errorHandler = (
       success: false,
       message: "Invalid access token",
     });
-
     return;
   }
 
@@ -80,7 +76,6 @@ const errorHandler = (
       success: false,
       message: "Invalid ID format",
     });
-
     return;
   }
 
