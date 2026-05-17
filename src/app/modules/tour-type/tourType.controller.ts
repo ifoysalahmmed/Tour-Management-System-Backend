@@ -15,20 +15,22 @@ const createTourType = catchAsync(async (req, res) => {
   });
 });
 
-const getAllTourTypes = catchAsync(async (_req, res) => {
-  const result = await TourTypeServices.getAllTourTypesFromDB();
+const getAllTourTypes = catchAsync(async (req, res) => {
+  const result = await TourTypeServices.getAllTourTypesFromDB(
+    req.query as Record<string, string>,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Tour types retrieved successfully",
-    data: result,
+    data: result.tourTypes,
+    meta: result.meta,
   });
 });
 
 const updateTourType = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   const tourType = await TourTypeServices.updateTourTypeIntoDB(
     id as string,
     req.body,
@@ -44,7 +46,6 @@ const updateTourType = catchAsync(async (req, res) => {
 
 const deleteTourType = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   await TourTypeServices.deleteTourTypeFromDB(id as string);
 
   sendResponse(res, {
