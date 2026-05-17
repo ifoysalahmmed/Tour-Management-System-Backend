@@ -28,7 +28,6 @@ const getAllDivisions = catchAsync(async (_req, res) => {
 
 const getADivision = catchAsync(async (req, res) => {
   const { slug } = req.params;
-
   const result = await DivisionServices.getDivisionBySlugFromDB(slug as string);
 
   sendResponse(res, {
@@ -41,7 +40,6 @@ const getADivision = catchAsync(async (req, res) => {
 
 const updateDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   const result = await DivisionServices.updateDivisionIntoDB(
     id as string,
     req.body,
@@ -57,7 +55,6 @@ const updateDivision = catchAsync(async (req, res) => {
 
 const deleteDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   await DivisionServices.deleteDivisionFromDB(id as string);
 
   sendResponse(res, {
