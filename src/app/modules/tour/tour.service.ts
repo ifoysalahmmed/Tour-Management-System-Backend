@@ -1,13 +1,15 @@
 import status from "http-status";
 
 import { AppError } from "../../errors/app.error.js";
+import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { DivisionModel } from "../division/division.model.js";
 import { TourTypeModel } from "../tour-type/tourType.model.js";
-import type { IGetAllToursQuery, ITour } from "./tour.interface.js";
+import { tourSearchableFields } from "./tour.constant.js";
+import type { TTourCreate, TTourUpdate } from "./tour.interface.js";
 import { TourModel } from "./tour.model.js";
 
-const createTourIntoDB = async (payload: Partial<ITour>) => {
-  const { division, tourType } = payload as ITour;
+const createTourIntoDB = async (payload: Partial<TTourCreate>) => {
+  const { division, tourType } = payload as TTourCreate;
 
   const isDivisionExists = await DivisionModel.exists({ _id: division });
 
@@ -24,30 +26,29 @@ const createTourIntoDB = async (payload: Partial<ITour>) => {
   return await TourModel.create(payload);
 };
 
-const getAllToursFromDB = async (query: IGetAllToursQuery) => {
-  const page = Math.max(1, query.page ?? 1);
-  const limit = Math.max(1, Math.min(100, query.limit ?? 10));
-  const sortBy = query.sortBy ?? "createdAt";
-  const sortOrder = query.sortOrder === "asc" ? 1 : -1;
-  const skip = (page - 1) * limit;
+const getAllToursFromDB = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(TourModel.find(), query);
 
-  const [tours, total] = await Promise.all([
-    TourModel.find()
-      .populate("division")
-      .populate("tourType")
-      .sort({ [sortBy]: sortOrder })
-      .skip(skip)
-      .limit(limit),
-    TourModel.countDocuments(),
+  const data = queryBuilder
+    .search(tourSearchableFields)
+    .filter()
+    .sort()
+    .select()
+    .paginate()
+    .populate("division tourType");
+
+  const [tours, meta] = await Promise.all([
+    data.modelQuery,
+    queryBuilder.getMetaData(),
   ]);
 
   return {
     tours,
-    meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    meta,
   };
 };
 
-const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
+const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
   const targetTour = await TourModel.findById(id);
 
   if (!targetTour) {
@@ -74,16 +75,20 @@ const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
     }
   }
 
-  if (payload.endDate) {
-    const startDate = payload.startDate ?? targetTour.startDate;
-    const endDate = payload.endDate;
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
 
-    if (startDate && endDate < startDate) {
-      throw new AppError(
-        status.BAD_REQUEST,
-        "End date cannot be before start date",
-      );
-    }
+  if (payload.startDate && payload.startDate < today) {
+    throw new AppError(status.BAD_REQUEST, "Start date cannot be in the past");
+  }
+
+  const startDate = payload.startDate ?? targetTour.startDate;
+  const endDate = payload.endDate ?? targetTour.endDate;
+
+  if (startDate && endDate && endDate < startDate) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "End date cannot be before start date",
+    );
   }
 
   return await TourModel.findByIdAndUpdate(id, payload, {

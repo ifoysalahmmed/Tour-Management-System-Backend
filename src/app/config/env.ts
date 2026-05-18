@@ -45,7 +45,7 @@ const loadEnvVars = (): EnvVars => {
 
   if (missingVars.length > 0) {
     throw new Error(
-      `Missing required environment variables: ${missingVars.join(", ")}`,
+      `The following required environment variables are missing: ${missingVars.join(", ")}`,
     );
   }
 

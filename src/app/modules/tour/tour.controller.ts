@@ -16,14 +16,9 @@ const createTour = catchAsync(async (req, res) => {
 });
 
 const getAllTours = catchAsync(async (req, res) => {
-  const { page, limit, sortBy, sortOrder } = req.query;
-
-  const result = await TourServices.getAllToursFromDB({
-    ...(typeof page === "string" && { page: Number(page) }),
-    ...(typeof limit === "string" && { limit: Number(limit) }),
-    ...(typeof sortBy === "string" && { sortBy }),
-    ...((sortOrder === "asc" || sortOrder === "desc") && { sortOrder }),
-  });
+  const result = await TourServices.getAllToursFromDB(
+    req.query as Record<string, string>,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
@@ -36,7 +31,6 @@ const getAllTours = catchAsync(async (req, res) => {
 
 const updateTour = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   const result = await TourServices.updateTourIntoDB(id as string, req.body);
 
   sendResponse(res, {

@@ -15,12 +15,18 @@ const validateBody =
       }
 
       req.body = await schema.parseAsync(req.body);
+
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
         next(error);
       } else {
-        next(new AppError(status.BAD_REQUEST, "Invalid request body"));
+        next(
+          new AppError(
+            status.BAD_REQUEST,
+            "The request body contains invalid data",
+          ),
+        );
       }
     }
   };

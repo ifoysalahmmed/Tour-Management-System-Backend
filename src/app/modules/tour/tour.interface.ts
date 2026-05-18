@@ -5,10 +5,10 @@ export interface ITour {
   slug: string;
   description?: string;
   images?: string[];
-  location?: string;
-  costFrom?: number;
-  startDate?: Date;
-  endDate?: Date;
+  location: string;
+  costFrom: number;
+  startDate: Date;
+  endDate: Date;
   departureLocation?: string;
   arrivalLocation?: string;
   included?: string[];
@@ -21,9 +21,30 @@ export interface ITour {
   tourType: Types.ObjectId;
 }
 
-export interface IGetAllToursQuery {
-  page?: number;
-  limit?: number;
-  sortBy?: string;
-  sortOrder?: "asc" | "desc";
-}
+export type TTourCreate = Required<
+  Pick<
+    ITour,
+    | "title"
+    | "location"
+    | "costFrom"
+    | "startDate"
+    | "endDate"
+    | "division"
+    | "tourType"
+  > &
+    Partial<
+      Omit<
+        ITour,
+        | "title"
+        | "slug"
+        | "location"
+        | "costFrom"
+        | "startDate"
+        | "endDate"
+        | "division"
+        | "tourType"
+      >
+    >
+>;
+
+export type TTourUpdate = Partial<Omit<ITour, "slug">>;

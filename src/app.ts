@@ -2,9 +2,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
 import type { Express, Request, Response } from "express";
+import expressSession from "express-session";
 import status from "http-status";
 import passport from "passport";
-import expressSession from "express-session";
 
 import "./app/config/passport.js";
 import { envVars } from "./app/config/env.js";
@@ -15,37 +15,49 @@ import sendResponse from "./app/utils/sendResponse.js";
 
 const app: Express = express();
 
-// Middlewares
+// Configure session for short-lived OAuth authentication flow
 app.use(
   expressSession({
     secret: envVars.EXPRESS_SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 5 * 60 * 1000 }, // 5 min — only needed during OAuth handshake
+    cookie: {
+      maxAge: 5 * 60 * 1000, // Session expires after 5 minutes during OAuth handshake
+    },
   }),
 );
+
+// Register global application middlewares
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(cookieParser());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: envVars.ALLOWED_ORIGINS }));
+app.use(
+  express.urlencoded({
+    extended: true,
+  }),
+);
+app.use(
+  cors({
+    origin: envVars.ALLOWED_ORIGINS,
+  }),
+);
 
-// Routes
+// Register API routes
 app.use("/api/v1", router);
 
 app.get("/", (_req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Welcome to the Tour Management API",
+    message: "Tour Management API is running successfully",
   });
 });
 
-// 404 handler
+// Handle requests to undefined routes
 app.use(notFound);
 
-// Global error handler
+// Handle application errors globally
 app.use(errorHandler);
 
 export default app;

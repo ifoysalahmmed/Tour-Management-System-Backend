@@ -8,12 +8,10 @@ import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import setCookies, { cookieOptions } from "../../utils/setCookies.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
-import type { TUserInput } from "./auth.interface.js";
+import type { IUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
 
 const loginWithCredentials = catchAsync(async (req, res, next) => {
-  // const loginResult = await AuthServices.loginWithCredentials(req.body);
-
   passport.authenticate(
     "local",
     async (err: any, user: any, info: { message: string }) => {
@@ -21,7 +19,7 @@ const loginWithCredentials = catchAsync(async (req, res, next) => {
         return next(
           new AppError(
             status.UNAUTHORIZED,
-            info.message || "Authentication failed",
+            info.message || "Credential authentication failed",
           ),
         );
       }
@@ -30,13 +28,12 @@ const loginWithCredentials = catchAsync(async (req, res, next) => {
         return next(
           new AppError(
             status.UNAUTHORIZED,
-            info.message || "Invalid credentials",
+            info.message || "Invalid email or password",
           ),
         );
       }
 
       const { password: _password, ...safeUser } = user;
-
       const tokens = generateAuthTokens(user);
 
       setCookies(res, tokens);
@@ -44,7 +41,7 @@ const loginWithCredentials = catchAsync(async (req, res, next) => {
       sendResponse(res, {
         statusCode: status.OK,
         success: true,
-        message: "Logged in successfully",
+        message: "Login completed successfully",
         data: {
           accessToken: tokens.accessToken,
           refreshToken: tokens.refreshToken,
@@ -59,7 +56,7 @@ const handleRefreshToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
 
   if (!refreshToken) {
-    throw new AppError(status.UNAUTHORIZED, "Refresh token is missing");
+    throw new AppError(status.UNAUTHORIZED, "Refresh token is required");
   }
 
   const refreshedAccessToken = await AuthServices.refreshAccessToken(
@@ -78,13 +75,12 @@ const handleRefreshToken = catchAsync(async (req, res) => {
 
 const logout = catchAsync(async (_req, res) => {
   res.clearCookie("accessToken", cookieOptions);
-
   res.clearCookie("refreshToken", cookieOptions);
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Logged out successfully",
+    message: "Logout completed successfully",
     data: null,
   });
 });
@@ -98,7 +94,7 @@ const resetPassword = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
-    message: "Password changed successfully",
+    message: "Password updated successfully",
     data: null,
   });
 });
@@ -110,15 +106,15 @@ const handleGoogleCallback = catchAsync(async (req, res) => {
     redirectTo = redirectTo.slice(1);
   }
 
-  const user = req.user as TUserInput;
+  const user = req.user as IUserInput;
 
   if (!user) {
     throw new AppError(status.NOT_FOUND, "Google authentication failed");
   }
 
   const token = generateAuthTokens(user);
-  setCookies(res, token);
 
+  setCookies(res, token);
   res.redirect(`${envVars.FRONTEND_URL}/${redirectTo}`);
 });
 

@@ -23,13 +23,13 @@ export interface IUser {
   name: string;
   email: string;
   password?: string; // Undefined for OAuth-only users
+  role: UserRole;
   phone?: string;
   picture?: string;
   address?: string;
   isDeleted?: boolean;
   isActive?: UserStatus;
   isVerified?: boolean;
-  role: UserRole;
   auths: IAuthProvider[]; // Supports multiple auth providers per user
   bookings?: Types.ObjectId[];
   guides?: Types.ObjectId[];
