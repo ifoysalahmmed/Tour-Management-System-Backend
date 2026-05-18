@@ -55,6 +55,7 @@ const updateDivision = catchAsync(async (req, res) => {
 
 const deleteDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
+
   await DivisionServices.deleteDivisionFromDB(id as string);
 
   sendResponse(res, {

@@ -23,10 +23,10 @@ export interface IUser {
   name: string;
   email: string;
   password?: string; // Undefined for OAuth-only users
+  role: UserRole;
   phone?: string;
   picture?: string;
   address?: string;
-  role: UserRole;
   isDeleted?: boolean;
   isActive?: UserStatus;
   isVerified?: boolean;

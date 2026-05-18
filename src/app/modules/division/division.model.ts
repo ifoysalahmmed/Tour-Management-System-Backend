@@ -5,12 +5,31 @@ import type { IDivision } from "./division.interface.js";
 
 const divisionSchema = new Schema<IDivision>(
   {
-    name: { type: String, required: true, unique: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
-    thumbnail: { type: String, trim: true },
-    description: { type: String, trim: true },
+    name: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    thumbnail: {
+      type: String,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
 divisionSchema.pre("validate", function () {

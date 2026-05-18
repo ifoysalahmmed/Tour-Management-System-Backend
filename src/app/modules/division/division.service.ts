@@ -15,7 +15,10 @@ const getAllDivisionsFromDB = async () => {
     DivisionModel.countDocuments(),
   ]);
 
-  return { divisions, total };
+  return {
+    divisions,
+    total,
+  };
 };
 
 const getDivisionBySlugFromDB = async (slug: string) => {
@@ -39,7 +42,7 @@ const updateDivisionIntoDB = async (
   }
 
   return await DivisionModel.findByIdAndUpdate(id, payload, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 };
@@ -54,7 +57,10 @@ const deleteDivisionFromDB = async (id: string) => {
   const isUsedInTour = await TourModel.exists({ division: id });
 
   if (isUsedInTour) {
-    throw new AppError(status.CONFLICT, "Division is used in a tour");
+    throw new AppError(
+      status.CONFLICT,
+      "Division cannot be deleted because it is associated with one or more tours",
+    );
   }
 
   return await DivisionModel.findByIdAndDelete(id);

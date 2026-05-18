@@ -7,7 +7,7 @@ const notFound = (_req: Request, res: Response): void => {
   sendResponse(res, {
     statusCode: status.NOT_FOUND,
     success: false,
-    message: "Route not found",
+    message: "The requested route was not found",
   });
 };
 

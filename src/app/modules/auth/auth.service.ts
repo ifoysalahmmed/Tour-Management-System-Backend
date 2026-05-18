@@ -20,19 +20,28 @@ const refreshAccessToken = async (refreshToken: string) => {
   }).lean();
 
   if (!user) {
-    throw new AppError(status.NOT_FOUND, "Invalid credentials");
+    throw new AppError(
+      status.NOT_FOUND,
+      "No user account found for the provided refresh token",
+    );
   }
 
   if (user.isActive === UserStatus.BLOCKED) {
-    throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+    throw new AppError(
+      status.FORBIDDEN,
+      "Your account has been blocked. Please contact support.",
+    );
   }
 
   if (user.isActive === UserStatus.INACTIVE) {
-    throw new AppError(status.FORBIDDEN, "Your account is inactive");
+    throw new AppError(status.FORBIDDEN, "Your account is currently inactive.");
   }
 
   if (user.isDeleted) {
-    throw new AppError(status.BAD_GATEWAY, "User account has been deleted");
+    throw new AppError(
+      status.BAD_GATEWAY,
+      "This user account has been deleted",
+    );
   }
 
   const { accessToken } = generateAuthTokens(user);
@@ -50,7 +59,7 @@ const changePassword = async (
   const user = await UserModel.findById(decodedToken.id).select("+password");
 
   if (!user) {
-    throw new AppError(status.NOT_FOUND, "User not found");
+    throw new AppError(status.NOT_FOUND, "User account was not found");
   }
 
   const isOldPasswordMatched = await bcrypt.compare(
@@ -59,7 +68,7 @@ const changePassword = async (
   );
 
   if (!isOldPasswordMatched) {
-    throw new AppError(status.BAD_REQUEST, "Old password is incorrect");
+    throw new AppError(status.BAD_REQUEST, "Current password is incorrect");
   }
 
   user!.password = await bcrypt.hash(
@@ -71,7 +80,6 @@ const changePassword = async (
 };
 
 export const AuthServices = {
-  // loginWithCredentials,
   refreshAccessToken,
   changePassword,
 };

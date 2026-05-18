@@ -43,6 +43,7 @@ const updateTour = catchAsync(async (req, res) => {
 
 const deleteTour = catchAsync(async (req, res) => {
   const { id } = req.params;
+
   await TourServices.deleteTourFromDB(id as string);
 
   sendResponse(res, {

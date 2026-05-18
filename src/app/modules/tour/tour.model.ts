@@ -5,12 +5,35 @@ import type { ITour } from "./tour.interface.js";
 
 const tourSchema = new Schema<ITour>(
   {
-    title: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, trim: true },
-    description: { type: String, trim: true },
-    images: { type: [String], default: [] },
-    location: { type: String, required: true, trim: true },
-    costFrom: { type: Number, required: true, min: 0 },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+    description: {
+      type: String,
+      trim: true,
+    },
+    images: {
+      type: [String],
+      default: [],
+    },
+    location: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    costFrom: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
     startDate: {
       type: Date,
       required: true,
@@ -31,14 +54,38 @@ const tourSchema = new Schema<ITour>(
         message: "End date must be on or after the start date",
       },
     },
-    departureLocation: { type: String, trim: true },
-    arrivalLocation: { type: String, trim: true },
-    included: { type: [String], default: [] },
-    excluded: { type: [String], default: [] },
-    amenities: { type: [String], default: [] },
-    tourPlan: { type: [String], default: [] },
-    maxGuest: { type: Number, min: 1 },
-    minAge: { type: Number, min: 0 },
+    departureLocation: {
+      type: String,
+      trim: true,
+    },
+    arrivalLocation: {
+      type: String,
+      trim: true,
+    },
+    included: {
+      type: [String],
+      default: [],
+    },
+    excluded: {
+      type: [String],
+      default: [],
+    },
+    amenities: {
+      type: [String],
+      default: [],
+    },
+    tourPlan: {
+      type: [String],
+      default: [],
+    },
+    maxGuest: {
+      type: Number,
+      min: 1,
+    },
+    minAge: {
+      type: Number,
+      min: 0,
+    },
     division: {
       type: Schema.Types.ObjectId,
       ref: "Division",
@@ -50,10 +97,16 @@ const tourSchema = new Schema<ITour>(
       required: [true, "Tour Type id is required"],
     },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+  },
 );
 
-tourSchema.index({ division: 1, tourType: 1 });
+tourSchema.index({
+  division: 1,
+  tourType: 1,
+});
 
 tourSchema.pre("validate", function () {
   if (this.isModified("title")) {

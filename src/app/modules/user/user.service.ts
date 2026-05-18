@@ -147,7 +147,7 @@ const updateUserIntoDB = async (
   }
 
   return await UserModel.findByIdAndUpdate(userId, safePayload, {
-    new: true,
+    returnDocument: "after",
     runValidators: true,
   });
 };

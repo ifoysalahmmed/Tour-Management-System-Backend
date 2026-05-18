@@ -13,7 +13,10 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
       const accessToken = req.headers.authorization;
 
       if (!accessToken) {
-        throw new AppError(status.UNAUTHORIZED, "Access token is missing");
+        throw new AppError(
+          status.UNAUTHORIZED,
+          "Authorization token is required",
+        );
       }
 
       const verifiedToken = verifyAccessToken(
@@ -26,25 +29,37 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
       }).lean();
 
       if (!user) {
-        throw new AppError(status.NOT_FOUND, "Invalid credentials");
+        throw new AppError(
+          status.NOT_FOUND,
+          "No user account found for the provided credentials",
+        );
       }
 
       if (user.isActive === UserStatus.BLOCKED) {
-        throw new AppError(status.FORBIDDEN, "Your account has been blocked");
+        throw new AppError(
+          status.FORBIDDEN,
+          "Your account has been blocked. Please contact support.",
+        );
       }
 
       if (user.isActive === UserStatus.INACTIVE) {
-        throw new AppError(status.FORBIDDEN, "Your account is inactive");
+        throw new AppError(
+          status.FORBIDDEN,
+          "Your account is currently inactive.",
+        );
       }
 
       if (user.isDeleted) {
-        throw new AppError(status.FORBIDDEN, "User account has been deleted");
+        throw new AppError(
+          status.FORBIDDEN,
+          "This user account has been deleted.",
+        );
       }
 
       if (allowedRoles.length && !allowedRoles.includes(verifiedToken.role)) {
         throw new AppError(
           status.FORBIDDEN,
-          "You are not authorized to access this route",
+          "You do not have permission to access this resource",
         );
       }
 
