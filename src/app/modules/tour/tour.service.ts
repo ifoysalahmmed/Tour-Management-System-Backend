@@ -5,11 +5,11 @@ import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { DivisionModel } from "../division/division.model.js";
 import { TourTypeModel } from "../tour-type/tourType.model.js";
 import { tourSearchableFields } from "./tour.constant.js";
-import type { ITour } from "./tour.interface.js";
+import type { TTourCreate, TTourUpdate } from "./tour.interface.js";
 import { TourModel } from "./tour.model.js";
 
-const createTourIntoDB = async (payload: Partial<ITour>) => {
-  const { division, tourType } = payload as ITour;
+const createTourIntoDB = async (payload: Partial<TTourCreate>) => {
+  const { division, tourType } = payload as TTourCreate;
 
   const isDivisionExists = await DivisionModel.exists({ _id: division });
 
@@ -39,7 +39,7 @@ const getAllToursFromDB = async (query: Record<string, string>) => {
 
   const [tours, meta] = await Promise.all([
     data.modelQuery,
-    queryBuilder.countTotal(),
+    queryBuilder.getMetaData(),
   ]);
 
   return {
@@ -48,7 +48,7 @@ const getAllToursFromDB = async (query: Record<string, string>) => {
   };
 };
 
-const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
+const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
   const targetTour = await TourModel.findById(id);
 
   if (!targetTour) {
@@ -75,16 +75,20 @@ const updateTourIntoDB = async (id: string, payload: Partial<ITour>) => {
     }
   }
 
-  if (payload.endDate) {
-    const startDate = payload.startDate ?? targetTour.startDate;
-    const endDate = payload.endDate;
+  const today = new Date(new Date().setHours(0, 0, 0, 0));
 
-    if (startDate && endDate < startDate) {
-      throw new AppError(
-        status.BAD_REQUEST,
-        "End date cannot be before start date",
-      );
-    }
+  if (payload.startDate && payload.startDate < today) {
+    throw new AppError(status.BAD_REQUEST, "Start date cannot be in the past");
+  }
+
+  const startDate = payload.startDate ?? targetTour.startDate;
+  const endDate = payload.endDate ?? targetTour.endDate;
+
+  if (startDate && endDate && endDate < startDate) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "End date cannot be before start date",
+    );
   }
 
   return await TourModel.findByIdAndUpdate(id, payload, {

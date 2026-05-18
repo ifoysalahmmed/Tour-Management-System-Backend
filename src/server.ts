@@ -7,20 +7,21 @@ import app from "./app.js";
 import { envVars } from "./app/config/env.js";
 import seedSuperAdmin from "./app/utils/seedSuperAdmin.js";
 
-nodeDns.setServers(["1.1.1.1", "8.8.8.8"]); // Set custom DNS servers to avoid potential DNS resolution issues
+// Use reliable public DNS servers to reduce connection issues during startup
+nodeDns.setServers(["1.1.1.1", "8.8.8.8"]);
 
 let server: Server;
 
 const startServer = async (): Promise<void> => {
   try {
     await mongoose.connect(envVars.DATABASE_URL);
-    console.log("Connected to MongoDB using Mongoose");
+    console.log("MongoDB connection established successfully");
 
     server = app.listen(envVars.PORT, () => {
-      console.log(`Server is listening to PORT ${envVars.PORT}`);
+      console.log(`Server is running on port ${envVars.PORT}`);
     });
   } catch (error) {
-    console.error("Failed to start server:", error);
+    console.error("Server startup failed:", error);
     process.exit(1);
   }
 };
@@ -28,21 +29,22 @@ const startServer = async (): Promise<void> => {
 const gracefulShutdown = (event: string, isError = false) => {
   return (reason?: Error | unknown): void => {
     if (isError) {
-      console.error(`Received ${event}:`, reason);
+      console.error(`Unexpected ${event} detected:`, reason);
     } else {
-      console.log(`Received ${event}, shutting down gracefully...`);
+      console.log(`${event} received. Starting graceful shutdown...`);
     }
 
     if (server) {
       server.close(() => {
-        console.log(`Server closed due to ${event}`);
+        console.log(`HTTP server closed after ${event}`);
+
         mongoose.connection.close().then(() => {
-          console.log("MongoDB connection closed");
+          console.log("MongoDB connection closed successfully");
           process.exit(isError ? 1 : 0);
         });
       });
     } else {
-      console.log("No server to close, exiting process");
+      console.log("No active HTTP server found. Exiting process...");
       process.exit(isError ? 1 : 0);
     }
   };
@@ -55,6 +57,5 @@ const gracefulShutdown = (event: string, isError = false) => {
 
 process.on("SIGTERM", gracefulShutdown("SIGTERM"));
 process.on("SIGINT", gracefulShutdown("SIGINT"));
-
 process.on("unhandledRejection", gracefulShutdown("unhandledRejection", true));
 process.on("uncaughtException", gracefulShutdown("uncaughtException", true));

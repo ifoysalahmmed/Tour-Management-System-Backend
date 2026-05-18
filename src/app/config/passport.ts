@@ -19,15 +19,16 @@ passport.use(
     },
     async (email, password, done) => {
       try {
-        const user = await UserModel.findOne({ email, isDeleted: false })
+        const user = await UserModel.findOne({
+          email,
+          isDeleted: false,
+        })
           .select("+password")
           .lean();
 
-        console.log(user);
-
         if (!user) {
           return done(null, false, {
-            message: "User not found with the provided email",
+            message: "No active user account found with this email address",
           });
         }
 
@@ -38,7 +39,7 @@ passport.use(
         if (hasGoogleAuth && !user.password) {
           return done(null, false, {
             message:
-              "This account uses Google OAuth for authentication. If you want to log in with email and password, please set up a password for your account.",
+              "This account is registered with Google sign-in. Please use Google login or set a password before using email login.",
           });
         }
 
@@ -49,14 +50,14 @@ passport.use(
 
         if (!isPasswordMatched) {
           return done(null, false, {
-            message: "Invalid credentials",
+            message: "Invalid email or password",
           });
         }
 
         return done(null, user);
       } catch (error) {
         return done(error, false, {
-          message: "Error occurred while processing local authentication",
+          message: "Local authentication failed. Please try again later.",
         });
       }
     },
@@ -81,7 +82,7 @@ passport.use(
 
         if (!email) {
           return done(null, false, {
-            message: "No email found in Google profile",
+            message: "Google account did not provide an email address",
           });
         }
 
@@ -103,14 +104,14 @@ passport.use(
           });
 
           return done(null, newUser, {
-            message: "New user created via Google OAuth",
+            message: "User account created successfully with Google sign-in",
           });
         }
 
         return done(null, user);
       } catch (error) {
         return done(error, false, {
-          message: "Error occurred while processing Google OAuth",
+          message: "Google authentication failed. Please try again later.",
         });
       }
     },

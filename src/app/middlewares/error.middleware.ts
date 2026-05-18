@@ -24,13 +24,12 @@ const errorHandler = (
     sendResponse(res, {
       statusCode: status.BAD_REQUEST,
       success: false,
-      message: "Validation Error",
+      message: "Request validation failed",
       errorSources: error.issues.map((issue) => ({
         path: issue.path.reverse().join(" inside ") || "unknown",
         message: issue.message,
       })),
     });
-
     return;
   }
 
@@ -45,7 +44,6 @@ const errorHandler = (
       success: false,
       message: error.message,
     });
-
     return;
   }
 
@@ -53,9 +51,8 @@ const errorHandler = (
     sendResponse(res, {
       statusCode: status.UNAUTHORIZED,
       success: false,
-      message: "Access token has expired",
+      message: "Access token has expired. Please log in again.",
     });
-
     return;
   }
 
@@ -63,9 +60,8 @@ const errorHandler = (
     sendResponse(res, {
       statusCode: status.UNAUTHORIZED,
       success: false,
-      message: "Invalid access token",
+      message: "The provided access token is invalid.",
     });
-
     return;
   }
 
@@ -78,16 +74,15 @@ const errorHandler = (
     sendResponse(res, {
       statusCode: status.BAD_REQUEST,
       success: false,
-      message: "Invalid ID format",
+      message: "Invalid resource ID format",
     });
-
     return;
   }
 
   sendResponse(res, {
     statusCode: status.INTERNAL_SERVER_ERROR,
     success: false,
-    message: error.message || "Internal server error",
+    message: error.message || "An unexpected internal server error occurred",
     stack: isDevelopment ? error.stack : undefined,
   });
 };

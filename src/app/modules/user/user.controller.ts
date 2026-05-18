@@ -16,15 +16,17 @@ const createUser = catchAsync(async (req, res) => {
   });
 });
 
-const getAllUsers = catchAsync(async (_req, res) => {
-  const result = await UserServices.getAllUsersFromDB();
+const getAllUsers = catchAsync(async (req, res) => {
+  const result = await UserServices.getAllUsersFromDB(
+    req.query as Record<string, string>,
+  );
 
   sendResponse(res, {
     statusCode: status.OK,
     success: true,
     message: "Users retrieved successfully",
     data: result.users,
-    meta: result.total,
+    meta: result.meta,
   });
 });
 

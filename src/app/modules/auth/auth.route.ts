@@ -25,8 +25,10 @@ router.post(
   AuthControllers.resetPassword,
 );
 
-// /booking (can be any route) -> /login -> successful google login -> redirect to /booking (can be any route)
-// or, /login -> successful google login -> redirect to / (or some default page)
+// Preserves the user's intended destination after successful Google login.
+// Example:
+//   /booking -> /login -> Google OAuth -> redirect to /booking
+//   /login -> Google OAuth -> redirect to /
 router.get("/google", (req: Request, res: Response) => {
   const redirectURL = req.query.redirect || "/";
 
@@ -36,8 +38,9 @@ router.get("/google", (req: Request, res: Response) => {
   })(req, res);
 });
 
-// Google will redirect to this URL after successful authentication
-// api/v1/auth/google/callback?state=/booking (can be any route)
+// Google redirects to this endpoint after successful authentication.
+// Example:
+//   /api/v1/auth/google/callback?state=/booking
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),

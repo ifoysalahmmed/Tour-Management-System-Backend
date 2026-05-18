@@ -31,7 +31,6 @@ const getAllTours = catchAsync(async (req, res) => {
 
 const updateTour = catchAsync(async (req, res) => {
   const { id } = req.params;
-
   const result = await TourServices.updateTourIntoDB(id as string, req.body);
 
   sendResponse(res, {

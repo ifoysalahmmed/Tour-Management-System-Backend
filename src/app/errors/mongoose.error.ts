@@ -9,7 +9,9 @@ export const handleDuplicateValueError = (res: Response, error: Error) => {
     Object.values(
       (
         error as unknown as {
-          errorResponse: { keyValue: Record<string, unknown> };
+          errorResponse: {
+            keyValue: Record<string, unknown>;
+          };
         }
       ).errorResponse?.keyValue ?? {},
     )[0] ?? "value";
@@ -17,7 +19,7 @@ export const handleDuplicateValueError = (res: Response, error: Error) => {
   sendResponse(res, {
     statusCode: status.CONFLICT,
     success: false,
-    message: `Duplicate entry - ${duplicateValue} already exists`,
+    message: `Duplicate value detected: ${duplicateValue} already exists`,
   });
 };
 
@@ -29,14 +31,14 @@ export const handleValidationError = (
     path: err.path,
     message:
       err.kind === "ObjectId"
-        ? `Invalid ObjectId ${err.value} for field ${err.path}`
-        : `Invalid value ${err.value} for field ${err.path}`,
+        ? `Invalid ObjectId ${err.value} provided for field ${err.path}`
+        : `Invalid value ${err.value} provided for field ${err.path}`,
   }));
 
   sendResponse(res, {
     statusCode: status.BAD_REQUEST,
     success: false,
-    message: "Validation Error",
+    message: "Validation failed",
     errorSources,
   });
 };
