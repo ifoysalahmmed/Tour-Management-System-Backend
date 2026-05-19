@@ -1,9 +1,9 @@
 export const userSearchableFields = [
   "name",
   "email",
-  "phone",
   "role",
+  "phone",
+  "isVerified",
   "isActive",
   "isDeleted",
-  "isVerified",
 ];
