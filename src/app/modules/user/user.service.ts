@@ -25,8 +25,8 @@ const createUserIntoDB = async (
   );
 
   const authProvider: IAuthProvider = {
-    provider: "credentials",
     providerId: email,
+    provider: "credentials",
   };
 
   return await UserModel.create({
@@ -58,6 +58,16 @@ const getAllUsersFromDB = async (query: Record<string, string>) => {
   };
 };
 
+const getUserByEmailFromDB = async (email: string) => {
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  return user;
+};
+
 const updateUserIntoDB = async (
   userId: string,
   payload: Partial<IUser>,
@@ -69,15 +79,15 @@ const updateUserIntoDB = async (
     throw new AppError(status.NOT_FOUND, "User not found");
   }
 
-  if (targetUser.isDeleted) {
-    throw new AppError(status.FORBIDDEN, "Cannot update a deleted user");
-  }
-
   if (targetUser.isActive === UserStatus.BLOCKED) {
     throw new AppError(status.FORBIDDEN, "Cannot update a blocked user");
   }
 
-  const { auths, email, bookings, guides, ...safePayload } =
+  if (targetUser.isDeleted) {
+    throw new AppError(status.FORBIDDEN, "Cannot update a deleted user");
+  }
+
+  const { email, auths, bookings, guides, ...safePayload } =
     payload as IUser & {
       bookings?: unknown;
       guides?: unknown;
@@ -124,9 +134,9 @@ const updateUserIntoDB = async (
   }
 
   if (
+    safePayload.isVerified !== undefined ||
     safePayload.isActive !== undefined ||
-    safePayload.isDeleted !== undefined ||
-    safePayload.isVerified !== undefined
+    safePayload.isDeleted !== undefined
   ) {
     if (requesterRole === UserRole.USER || requesterRole === UserRole.GUIDE) {
       throw new AppError(
@@ -155,5 +165,6 @@ const updateUserIntoDB = async (
 export const UserServices = {
   createUserIntoDB,
   getAllUsersFromDB,
+  getUserByEmailFromDB,
   updateUserIntoDB,
 };

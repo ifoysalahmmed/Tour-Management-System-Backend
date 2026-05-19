@@ -20,10 +20,16 @@ router.get(
   UserControllers.getAllUsers,
 );
 
+router.get(
+  "/:email",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  UserControllers.getAUser,
+);
+
 router.patch(
   "/:id",
-  validateBody(updateUserZodSchema),
   checkAuth(...Object.values(UserRole)),
+  validateBody(updateUserZodSchema),
   UserControllers.updateUser,
 );
 
