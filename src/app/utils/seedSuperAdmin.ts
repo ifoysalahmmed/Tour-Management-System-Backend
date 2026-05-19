@@ -4,7 +4,7 @@ import status from "http-status";
 
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
-import { UserRole } from "../modules/user/user.interface.js";
+import { UserRole, UserStatus } from "../modules/user/user.interface.js";
 import { UserModel } from "../modules/user/user.model.js";
 
 const seedSuperAdmin = async () => {
@@ -27,11 +27,19 @@ const seedSuperAdmin = async () => {
       name: "Super Admin",
       email: envVars.SUPER_ADMIN_EMAIL,
       password: hashedPassword,
-      role: UserRole.SUPER_ADMIN,
-      isVerified: true,
       auths: [
-        { provider: "credentials", providerId: envVars.SUPER_ADMIN_EMAIL },
+        {
+          providerId: envVars.SUPER_ADMIN_EMAIL,
+          provider: "credentials",
+        },
       ],
+      role: UserRole.SUPER_ADMIN,
+      phone: envVars.SUPER_ADMIN_PHONE,
+      picture: envVars.SUPER_ADMIN_PICTURE,
+      address: envVars.SUPER_ADMIN_ADDRESS,
+      isVerified: true,
+      isActive: UserStatus.ACTIVE,
+      isDeleted: false,
     });
 
     await superAdmin.save();
