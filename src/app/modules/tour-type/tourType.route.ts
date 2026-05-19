@@ -24,6 +24,12 @@ router.get(
   TourTypeControllers.getAllTourTypes,
 );
 
+router.get(
+  "/:id",
+  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  TourTypeControllers.getTourTypeById,
+);
+
 router.patch(
   "/:id",
   checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
