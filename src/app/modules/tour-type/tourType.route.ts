@@ -13,33 +13,33 @@ const router = Router();
 
 router.post(
   "/create",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(createTourTypeZodSchema),
   TourTypeControllers.createTourType,
 );
 
 router.get(
   "/",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   TourTypeControllers.getAllTourTypes,
 );
 
 router.get(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   TourTypeControllers.getTourTypeById,
 );
 
 router.patch(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(updateTourTypeZodSchema),
   TourTypeControllers.updateTourType,
 );
 
 router.delete(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   TourTypeControllers.deleteTourType,
 );
 

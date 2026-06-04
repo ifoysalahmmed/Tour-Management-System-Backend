@@ -93,7 +93,7 @@ passport.use(
             email,
             name: profile.displayName,
             picture: profile.photos?.[0]?.value as string,
-            role: UserRole.USER,
+            role: UserRole.User,
             isVerified: true,
             auths: [
               {

@@ -16,13 +16,13 @@ router.post(
 
 router.get(
   "/",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   UserControllers.getAllUsers,
 );
 
 router.get(
   "/:email",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   UserControllers.getAUser,
 );
 

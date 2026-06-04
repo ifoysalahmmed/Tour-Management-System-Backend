@@ -1,16 +1,16 @@
 import type { Types } from "mongoose";
 
 export enum UserRole {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  ADMIN = "ADMIN",
-  USER = "USER",
-  GUIDE = "GUIDE",
+  SuperAdmin = "SUPER_ADMIN",
+  Admin = "ADMIN",
+  User = "USER",
+  Guide = "GUIDE",
 }
 
 export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  BLOCKED = "BLOCKED",
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+  Blocked = "BLOCKED",
 }
 
 /** Tracks how a user authenticated (e.g. credentials or OAuth) */
