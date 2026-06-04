@@ -38,7 +38,7 @@ const userSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: Object.values(UserRole),
-      default: UserRole.USER,
+      default: UserRole.User,
     },
     phone: {
       type: String,
@@ -59,7 +59,7 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: String,
       enum: Object.values(UserStatus),
-      default: UserStatus.ACTIVE,
+      default: UserStatus.Active,
     },
     isDeleted: {
       type: Boolean,

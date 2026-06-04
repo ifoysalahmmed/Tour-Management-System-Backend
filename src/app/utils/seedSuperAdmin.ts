@@ -33,12 +33,12 @@ const seedSuperAdmin = async () => {
           provider: "credentials",
         },
       ],
-      role: UserRole.SUPER_ADMIN,
+      role: UserRole.SuperAdmin,
       phone: envVars.SUPER_ADMIN_PHONE,
       picture: envVars.SUPER_ADMIN_PICTURE,
       address: envVars.SUPER_ADMIN_ADDRESS,
       isVerified: true,
-      isActive: UserStatus.ACTIVE,
+      isActive: UserStatus.Active,
       isDeleted: false,
     });
 

@@ -35,14 +35,14 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
         );
       }
 
-      if (user.isActive === UserStatus.INACTIVE) {
+      if (user.isActive === UserStatus.Inactive) {
         throw new AppError(
           status.FORBIDDEN,
           "Your account is currently inactive.",
         );
       }
 
-      if (user.isActive === UserStatus.BLOCKED) {
+      if (user.isActive === UserStatus.Blocked) {
         throw new AppError(
           status.FORBIDDEN,
           "Your account has been blocked. Please contact support.",
