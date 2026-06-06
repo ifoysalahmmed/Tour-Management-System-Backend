@@ -16,7 +16,7 @@ const bookingSchema = new Schema<IBook>(
     },
     guide: {
       type: Schema.Types.ObjectId,
-      ref: "Guide",
+      ref: "User",
     },
     guestCount: {
       type: Number,
