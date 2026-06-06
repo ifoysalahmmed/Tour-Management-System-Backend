@@ -1,5 +1,12 @@
 import type { Types } from "mongoose";
 
+export enum CurrencyList {
+  BDT = "BDT",
+  USD = "USD",
+  EUR = "EUR",
+  GBP = "GBP",
+}
+
 export enum PaymentStatus {
   Unpaid = "UNPAID",
   Paid = "PAID",
@@ -12,7 +19,10 @@ export interface IPayment {
   booking: Types.ObjectId;
   transactionId: string;
   amount: number;
-  paymentGateway?: any;
+  currency: CurrencyList;
+  paymentMethod?: string;
+  paymentGateway?: Record<string, unknown>;
   invoiceUrl?: string;
+  paidAt?: Date;
   status: PaymentStatus;
 }
