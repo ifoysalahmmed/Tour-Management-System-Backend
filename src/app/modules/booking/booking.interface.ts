@@ -1,7 +1,3 @@
-// User -> Booking -> userId, tourId, guideId?, paymentId?, paymentStatus, bookingDate, bookingStatus, guestNo, totalAmount, notes?
-
-// Flow: User -> Booking (pending) -> Payment (unpaid) -> SSLCommerz -> Booking update = confirmed -> Payment update = paid
-
 import type { Types } from "mongoose";
 
 export enum BookingStatus {
@@ -14,7 +10,9 @@ export enum BookingStatus {
 export interface IBook {
   user: Types.ObjectId;
   tour: Types.ObjectId;
-  payment?: Types.ObjectId;
+  guide?: Types.ObjectId;
   guestCount: number;
+  notes?: string;
+  payment?: Types.ObjectId;
   status: BookingStatus;
 }
