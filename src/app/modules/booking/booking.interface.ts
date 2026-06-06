@@ -12,6 +12,7 @@ export interface IBook {
   tour: Types.ObjectId;
   guide?: Types.ObjectId;
   guestCount: number;
+  totalAmount: number;
   notes?: string;
   payment?: Types.ObjectId;
   status: BookingStatus;
