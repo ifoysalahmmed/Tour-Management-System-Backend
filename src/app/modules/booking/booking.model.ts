@@ -1,8 +1,8 @@
 import { model, Schema } from "mongoose";
 
-import { BookingStatus, type IBook } from "./booking.interface.js";
+import { BookingStatus, type IBooking } from "./booking.interface.js";
 
-const bookingSchema = new Schema<IBook>(
+const bookingSchema = new Schema<IBooking>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -46,4 +46,4 @@ const bookingSchema = new Schema<IBook>(
   },
 );
 
-export const BookingModel = model<IBook>("Booking", bookingSchema);
+export const BookingModel = model<IBooking>("Booking", bookingSchema);

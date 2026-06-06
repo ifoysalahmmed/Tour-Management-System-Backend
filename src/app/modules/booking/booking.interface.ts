@@ -7,7 +7,7 @@ export enum BookingStatus {
   Failed = "FAILED",
 }
 
-export interface IBook {
+export interface IBooking {
   user: Types.ObjectId;
   tour: Types.ObjectId;
   guide?: Types.ObjectId;
@@ -17,3 +17,5 @@ export interface IBook {
   payment?: Types.ObjectId;
   status: BookingStatus;
 }
+
+export type IBookingCreate = Omit<IBooking, "guide" | "payment">;
