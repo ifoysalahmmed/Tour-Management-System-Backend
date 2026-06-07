@@ -64,28 +64,53 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
 
   const transactionId = generateTransactionId();
 
-  const booking = await BookingModel.create({
-    ...payload,
-    user: userId,
-    totalAmount: tour.costFrom * payload.guestCount,
-    status: BookingStatus.Pending,
-  });
+  const session = await BookingModel.startSession();
+  session.startTransaction();
 
-  const payment = await PaymentModel.create({
-    booking: booking._id,
-    transactionId,
-    amount: booking.totalAmount,
-    status: PaymentStatus.Unpaid,
-  });
+  try {
+    const bookingDocs = await BookingModel.create(
+      [
+        {
+          ...payload,
+          user: userId,
+          totalAmount: tour.costFrom * payload.guestCount,
+          status: BookingStatus.Pending,
+        },
+      ],
+      { session },
+    );
+    const booking = bookingDocs[0]!;
 
-  return await BookingModel.findByIdAndUpdate(
-    booking._id,
-    { payment: payment._id },
-    { returnDocument: "after", runValidators: true },
-  )
-    .populate("user", "name email phone address")
-    .populate("tour", "title costFrom")
-    .populate("payment", "transactionId amount currency status");
+    const paymentDocs = await PaymentModel.create(
+      [
+        {
+          booking: booking._id,
+          transactionId,
+          amount: booking.totalAmount,
+          status: PaymentStatus.Unpaid,
+        },
+      ],
+      { session },
+    );
+    const payment = paymentDocs[0]!;
+
+    const result = await BookingModel.findByIdAndUpdate(
+      booking._id,
+      { payment: payment._id },
+      { returnDocument: "after", runValidators: true, session },
+    )
+      .populate("user", "name email phone address")
+      .populate("tour", "title costFrom")
+      .populate("payment", "transactionId amount currency status");
+
+    await session.commitTransaction();
+    return result;
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
 };
 
 const getAllBookingsFromDB = async (query: Record<string, string>) => {
