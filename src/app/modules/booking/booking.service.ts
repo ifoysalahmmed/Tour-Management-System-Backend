@@ -3,6 +3,9 @@ import type { Types } from "mongoose";
 
 import { AppError } from "../../errors/app.error.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
+import { generateTransactionId } from "../../utils/generateTransactionId.js";
+import { PaymentStatus } from "../payment/payment.interface.js";
+import { PaymentModel } from "../payment/payment.model.js";
 import { TourModel } from "../tour/tour.model.js";
 import { UserRole } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
@@ -11,11 +14,16 @@ import { BookingStatus, type IBookingCreate } from "./booking.interface.js";
 import { BookingModel } from "./booking.model.js";
 
 const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
-  const [user, tour] = await Promise.all([
-    UserModel.findById(userId).lean(),
+  const [user, tour, existingBooking] = await Promise.all([
+    UserModel.findById(userId).select("phone address").lean(),
     TourModel.findById(payload.tour)
       .select("costFrom maxGuest startDate")
       .lean(),
+    BookingModel.findOne({
+      user: userId,
+      tour: payload.tour,
+      status: BookingStatus.Pending,
+    }).lean(),
   ]);
 
   if (!user) {
@@ -32,12 +40,6 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
   if (!tour) {
     throw new AppError(status.NOT_FOUND, "Invalid tour ID");
   }
-
-  const existingBooking = await BookingModel.findOne({
-    user: userId,
-    tour: payload.tour,
-    status: BookingStatus.Pending,
-  }).lean();
 
   if (existingBooking) {
     throw new AppError(
@@ -60,14 +62,30 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
     );
   }
 
-  const bookingPayload = {
+  const transactionId = generateTransactionId();
+
+  const booking = await BookingModel.create({
     ...payload,
     user: userId,
     totalAmount: tour.costFrom * payload.guestCount,
     status: BookingStatus.Pending,
-  };
+  });
 
-  return await BookingModel.create(bookingPayload);
+  const payment = await PaymentModel.create({
+    booking: booking._id,
+    transactionId,
+    amount: booking.totalAmount,
+    status: PaymentStatus.Unpaid,
+  });
+
+  return await BookingModel.findByIdAndUpdate(
+    booking._id,
+    { payment: payment._id },
+    { returnDocument: "after", runValidators: true },
+  )
+    .populate("user", "name email phone address")
+    .populate("tour", "title costFrom")
+    .populate("payment", "transactionId amount currency status");
 };
 
 const getAllBookingsFromDB = async (query: Record<string, string>) => {
@@ -136,7 +154,7 @@ const updateBookingStatusIntoDB = async (
   id: string,
   bookingStatus: BookingStatus,
 ) => {
-  const booking = await BookingModel.findById(id);
+  const booking = await BookingModel.findById(id).select("status");
 
   if (!booking) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
@@ -160,7 +178,7 @@ const assignGuideIntoDB = async (
   guideId: Types.ObjectId,
 ) => {
   const [booking, guide] = await Promise.all([
-    BookingModel.findById(bookingId),
+    BookingModel.findById(bookingId).select("status guide"),
     UserModel.findById(guideId).select("role").lean(),
   ]);
 
