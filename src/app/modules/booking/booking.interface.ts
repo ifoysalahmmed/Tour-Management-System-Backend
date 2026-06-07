@@ -18,4 +18,7 @@ export interface IBooking {
   status: BookingStatus;
 }
 
-export type IBookingCreate = Omit<IBooking, "guide" | "payment">;
+export type IBookingCreate = Omit<
+  IBooking,
+  "guide" | "totalAmount" | "payment" | "status"
+>;
