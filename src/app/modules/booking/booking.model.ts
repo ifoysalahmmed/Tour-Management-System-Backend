@@ -22,10 +22,6 @@ const bookingSchema = new Schema<IBooking>(
       type: Number,
       required: true,
     },
-    totalAmount: {
-      type: Number,
-      required: true,
-    },
     notes: {
       type: String,
       trim: true,

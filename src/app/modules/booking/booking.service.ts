@@ -73,7 +73,6 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         {
           ...payload,
           user: userId,
-          totalAmount: tour.costFrom * payload.guestCount,
           status: BookingStatus.Pending,
         },
       ],
@@ -86,7 +85,7 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         {
           booking: booking._id,
           transactionId,
-          amount: booking.totalAmount,
+          amount: tour.costFrom * booking.guestCount,
           status: PaymentStatus.Unpaid,
         },
       ],
