@@ -22,6 +22,18 @@ interface EnvVars {
   GOOGLE_CALLBACK_URL: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  SSL: {
+    STORE_ID: string;
+    STORE_PASSWORD: string;
+    PAYMENT_URL: string;
+    VALIDATION_URL: string;
+    // SUCCESS_FRONTEND_URL: string;
+    // FAILED_FRONTEND_URL: string;
+    // CANCELED_FRONTEND_URL: string;
+    // SUCCESS_BACKEND_URL: string;
+    // FAILED_BACKEND_URL: string;
+    // CANCELED_BACKEND_URL: string;
+  };
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -45,6 +57,10 @@ const loadEnvVars = (): EnvVars => {
     "GOOGLE_CALLBACK_URL",
     "EXPRESS_SESSION_SECRET",
     "FRONTEND_URL",
+    "SSL_STORE_ID",
+    "SSL_STORE_PASSWORD",
+    "SSL_PAYMENT_URL",
+    "SSL_VALIDATION_URL",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -77,6 +93,12 @@ const loadEnvVars = (): EnvVars => {
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    SSL: {
+      STORE_ID: process.env.SSL_STORE_ID as string,
+      STORE_PASSWORD: process.env.SSL_STORE_PASSWORD as string,
+      PAYMENT_URL: process.env.SSL_PAYMENT_URL as string,
+      VALIDATION_URL: process.env.SSL_VALIDATION_URL as string,
+    },
   };
 };
 
