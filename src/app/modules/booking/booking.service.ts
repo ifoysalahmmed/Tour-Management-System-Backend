@@ -2,17 +2,17 @@ import status from "http-status";
 import type { Types } from "mongoose";
 
 import { AppError } from "../../errors/app.error.js";
-import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { generateTransactionId } from "../../utils/generateTransactionId.js";
+import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { PaymentStatus } from "../payment/payment.interface.js";
 import { PaymentModel } from "../payment/payment.model.js";
+import { SSLCommerzServices } from "../sslCommerz/sslCommerz.service.js";
 import { TourModel } from "../tour/tour.model.js";
 import { UserRole } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
 import { bookingSearchableFields } from "./booking.constant.js";
 import { BookingStatus, type IBookingCreate } from "./booking.interface.js";
 import { BookingModel } from "./booking.model.js";
-import { SSLCommerzServices } from "../sslCommerz/sslCommerz.service.js";
 
 const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
   const [user, tour] = await Promise.all([
@@ -56,61 +56,75 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
   const session = await BookingModel.startSession();
   session.startTransaction();
 
+  const { bookingResult, paymentResult } = await (async () => {
+    try {
+      const bookingDocs = await BookingModel.create(
+        [{ ...payload, user: userId }],
+        { session },
+      );
+      const booking = bookingDocs[0]!;
+
+      const paymentDocs = await PaymentModel.create(
+        [
+          {
+            booking: booking._id,
+            transactionId,
+            amount: tour.costFrom * booking.guestCount,
+            status: PaymentStatus.Unpaid,
+          },
+        ],
+        { session },
+      );
+      const payment = paymentDocs[0]!;
+
+      const result = await BookingModel.findByIdAndUpdate(
+        booking._id,
+        { payment: payment._id },
+        { returnDocument: "after", runValidators: true, session },
+      )
+        .populate("user", "name email phone address")
+        .populate("tour", "title costFrom")
+        .populate("payment", "transactionId amount currency status");
+
+      await session.commitTransaction();
+      return { bookingResult: result, paymentResult: payment };
+    } catch (error) {
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      await session.endSession();
+    }
+  })();
+
   try {
-    const bookingDocs = await BookingModel.create(
-      [
-        {
-          ...payload,
-          user: userId,
-          bookingStatus: BookingStatus.Pending,
-        },
-      ],
-      { session },
-    );
-    const booking = bookingDocs[0]!;
-
-    const paymentDocs = await PaymentModel.create(
-      [
-        {
-          booking: booking._id,
-          transactionId,
-          amount: tour.costFrom * booking.guestCount,
-          status: PaymentStatus.Unpaid,
-        },
-      ],
-      { session },
-    );
-    const payment = paymentDocs[0]!;
-
-    const result = await BookingModel.findByIdAndUpdate(
-      booking._id,
-      { payment: payment._id },
-      { returnDocument: "after", runValidators: true, session },
-    )
-      .populate("user", "name email phone address")
-      .populate("tour", "title costFrom")
-      .populate("payment", "transactionId amount currency status");
-
     const sslPayment = await SSLCommerzServices.initiatePayment({
       name: user.name,
       email: user.email,
-      phone: user.phone,
-      address: user.address,
-      amount: payment.amount,
-      currency: payment.currency,
-      transactionId: payment.transactionId,
+      phone: user.phone!,
+      address: user.address!,
+      amount: paymentResult.amount,
+      currency: paymentResult.currency,
+      transactionId: paymentResult.transactionId,
     });
 
-    await session.commitTransaction();
     return {
-      booking: result,
       payment: sslPayment.GatewayPageURL,
+      booking: bookingResult,
     };
   } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
+    await Promise.all([
+      BookingModel.findByIdAndUpdate(bookingResult!._id, {
+        bookingStatus: BookingStatus.Failed,
+      }),
+      PaymentModel.findOneAndUpdate(
+        { transactionId },
+        { status: PaymentStatus.Failed },
+      ),
+    ]);
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Payment gateway initialization failed",
+    );
   }
 };
 
