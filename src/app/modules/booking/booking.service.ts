@@ -108,7 +108,7 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
     });
 
     return {
-      payment: sslPayment.GatewayPageURL,
+      paymentUrl: sslPayment.GatewayPageURL,
       booking: bookingResult,
     };
   } catch (error) {
