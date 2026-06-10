@@ -27,12 +27,12 @@ interface EnvVars {
     STORE_PASSWORD: string;
     PAYMENT_URL: string;
     VALIDATION_URL: string;
-    // SUCCESS_FRONTEND_URL: string;
-    // FAILED_FRONTEND_URL: string;
-    // CANCELED_FRONTEND_URL: string;
-    // SUCCESS_BACKEND_URL: string;
-    // FAILED_BACKEND_URL: string;
-    // CANCELED_BACKEND_URL: string;
+    SUCCEEDED_FRONTEND_URL: string;
+    FAILED_FRONTEND_URL: string;
+    CANCELLED_FRONTEND_URL: string;
+    SUCCEEDED_BACKEND_URL: string;
+    FAILED_BACKEND_URL: string;
+    CANCELLED_BACKEND_URL: string;
   };
 }
 
@@ -61,6 +61,12 @@ const loadEnvVars = (): EnvVars => {
     "SSL_STORE_PASSWORD",
     "SSL_PAYMENT_URL",
     "SSL_VALIDATION_URL",
+    "SSL_SUCCEEDED_FRONTEND_URL",
+    "SSL_FAILED_FRONTEND_URL",
+    "SSL_CANCELLED_FRONTEND_URL",
+    "SSL_SUCCEEDED_BACKEND_URL",
+    "SSL_FAILED_BACKEND_URL",
+    "SSL_CANCELLED_BACKEND_URL",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -98,6 +104,12 @@ const loadEnvVars = (): EnvVars => {
       STORE_PASSWORD: process.env.SSL_STORE_PASSWORD as string,
       PAYMENT_URL: process.env.SSL_PAYMENT_URL as string,
       VALIDATION_URL: process.env.SSL_VALIDATION_URL as string,
+      SUCCEEDED_FRONTEND_URL: process.env.SSL_SUCCEEDED_FRONTEND_URL as string,
+      FAILED_FRONTEND_URL: process.env.SSL_FAILED_FRONTEND_URL as string,
+      CANCELLED_FRONTEND_URL: process.env.SSL_CANCELLED_FRONTEND_URL as string,
+      SUCCEEDED_BACKEND_URL: process.env.SSL_SUCCEEDED_BACKEND_URL as string,
+      FAILED_BACKEND_URL: process.env.SSL_FAILED_BACKEND_URL as string,
+      CANCELLED_BACKEND_URL: process.env.SSL_CANCELLED_BACKEND_URL as string,
     },
   };
 };
