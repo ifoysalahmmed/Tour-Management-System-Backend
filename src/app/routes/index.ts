@@ -3,6 +3,7 @@ import { Router } from "express";
 import { AuthRoutes } from "../modules/auth/auth.route.js";
 import { BookingRoutes } from "../modules/booking/booking.route.js";
 import { DivisionRoutes } from "../modules/division/division.route.js";
+import { PaymentRoutes } from "../modules/payment/payment.route.js";
 import { TourRoutes } from "../modules/tour/tour.route.js";
 import { TourTypeRoutes } from "../modules/tour-type/tourType.route.js";
 import { UserRoutes } from "../modules/user/user.route.js";
@@ -33,6 +34,10 @@ const moduleRoutes = [
   {
     path: "/user",
     route: UserRoutes,
+  },
+  {
+    path: "/payment",
+    route: PaymentRoutes,
   },
 ];
 
