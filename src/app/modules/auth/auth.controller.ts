@@ -81,7 +81,6 @@ const logout = catchAsync(async (_req, res) => {
     statusCode: status.OK,
     success: true,
     message: "Logout completed successfully",
-    data: null,
   });
 });
 
