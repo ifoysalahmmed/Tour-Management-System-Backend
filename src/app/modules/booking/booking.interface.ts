@@ -2,7 +2,7 @@ import type { Types } from "mongoose";
 
 export enum BookingStatus {
   Pending = "PENDING",
-  Completed = "COMPLETED",
+  Confirmed = "CONFIRMED",
   Cancelled = "CANCELLED",
   Failed = "FAILED",
 }
@@ -14,10 +14,10 @@ export interface IBooking {
   guestCount: number;
   notes?: string;
   payment?: Types.ObjectId;
-  status: BookingStatus;
+  bookingStatus: BookingStatus;
 }
 
 export type IBookingCreate = Omit<
   IBooking,
-  "guide" | "totalAmount" | "payment" | "status"
+  "guide" | "payment" | "bookingStatus"
 >;

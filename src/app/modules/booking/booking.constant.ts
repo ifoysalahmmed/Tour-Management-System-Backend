@@ -1,1 +1,1 @@
-export const bookingSearchableFields = ["status", "notes"];
+export const bookingSearchableFields = ["bookingStatus", "notes"];

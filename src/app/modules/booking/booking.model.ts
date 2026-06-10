@@ -30,7 +30,7 @@ const bookingSchema = new Schema<IBooking>(
       type: Schema.Types.ObjectId,
       ref: "Payment",
     },
-    status: {
+    bookingStatus: {
       type: String,
       enum: Object.values(BookingStatus),
       default: BookingStatus.Pending,

@@ -24,7 +24,7 @@ export const createBookingZodSchema = z
 
 export const updateBookingStatusZodSchema = z
   .object({
-    status: z.enum(Object.values(BookingStatus) as [string, ...string[]], {
+    bookingStatus: z.enum(Object.values(BookingStatus) as [string, ...string[]], {
       error: "Invalid booking status",
     }),
   })

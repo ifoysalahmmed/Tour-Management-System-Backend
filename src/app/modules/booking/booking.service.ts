@@ -12,18 +12,14 @@ import { UserModel } from "../user/user.model.js";
 import { bookingSearchableFields } from "./booking.constant.js";
 import { BookingStatus, type IBookingCreate } from "./booking.interface.js";
 import { BookingModel } from "./booking.model.js";
+import { SSLCommerzServices } from "../sslCommerz/sslCommerz.service.js";
 
 const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
-  const [user, tour, existingBooking] = await Promise.all([
-    UserModel.findById(userId).select("phone address").lean(),
+  const [user, tour] = await Promise.all([
+    UserModel.findById(userId).select("name email phone address").lean(),
     TourModel.findById(payload.tour)
       .select("costFrom maxGuest startDate")
       .lean(),
-    BookingModel.findOne({
-      user: userId,
-      tour: payload.tour,
-      status: BookingStatus.Pending,
-    }).lean(),
   ]);
 
   if (!user) {
@@ -39,13 +35,6 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
 
   if (!tour) {
     throw new AppError(status.NOT_FOUND, "Invalid tour ID");
-  }
-
-  if (existingBooking) {
-    throw new AppError(
-      status.CONFLICT,
-      "You already have a pending booking for this tour",
-    );
   }
 
   if (tour.startDate < new Date()) {
@@ -73,7 +62,7 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         {
           ...payload,
           user: userId,
-          status: BookingStatus.Pending,
+          bookingStatus: BookingStatus.Pending,
         },
       ],
       { session },
@@ -102,8 +91,21 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
       .populate("tour", "title costFrom")
       .populate("payment", "transactionId amount currency status");
 
+    const sslPayment = await SSLCommerzServices.initiatePayment({
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      address: user.address,
+      amount: payment.amount,
+      currency: payment.currency,
+      transactionId: payment.transactionId,
+    });
+
     await session.commitTransaction();
-    return result;
+    return {
+      booking: result,
+      payment: sslPayment.GatewayPageURL,
+    };
   } catch (error) {
     await session.abortTransaction();
     throw error;
@@ -178,21 +180,13 @@ const updateBookingStatusIntoDB = async (
   id: string,
   bookingStatus: BookingStatus,
 ) => {
-  const booking = await BookingModel.findById(id).select("status");
+  const booking = await BookingModel.findById(id).select("bookingStatus");
 
   if (!booking) {
     throw new AppError(status.NOT_FOUND, "Booking not found");
   }
 
-  const terminalStatuses = [BookingStatus.Completed, BookingStatus.Cancelled];
-  if (terminalStatuses.includes(booking.status)) {
-    throw new AppError(
-      status.BAD_REQUEST,
-      "Cannot update status of a completed or cancelled booking",
-    );
-  }
-
-  booking.status = bookingStatus;
+  booking.bookingStatus = bookingStatus;
 
   return await booking.save();
 };
@@ -202,7 +196,7 @@ const assignGuideIntoDB = async (
   guideId: Types.ObjectId,
 ) => {
   const [booking, guide] = await Promise.all([
-    BookingModel.findById(bookingId).select("status guide"),
+    BookingModel.findById(bookingId).select("bookingStatus guide"),
     UserModel.findById(guideId).select("role").lean(),
   ]);
 
@@ -214,10 +208,10 @@ const assignGuideIntoDB = async (
     throw new AppError(status.BAD_REQUEST, "Assigned user is not a guide");
   }
 
-  if (booking.status === BookingStatus.Cancelled) {
+  if (booking.bookingStatus !== BookingStatus.Confirmed) {
     throw new AppError(
       status.BAD_REQUEST,
-      "Cannot assign a guide to a cancelled booking",
+      "Cannot assign a guide to a pending or cancelled or failed booking",
     );
   }
 
