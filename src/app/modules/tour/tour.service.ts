@@ -48,6 +48,16 @@ const getAllToursFromDB = async (query: Record<string, string>) => {
   };
 };
 
+const getTourBySlugFromDB = async (slug: string) => {
+  const tour = await TourModel.findOne({ slug });
+
+  if (!tour) {
+    throw new AppError(status.NOT_FOUND, "Tour not found");
+  }
+
+  return tour;
+};
+
 const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
   const targetTour = await TourModel.findById(id);
 
@@ -110,6 +120,7 @@ const deleteTourFromDB = async (id: string) => {
 export const TourServices = {
   createTourIntoDB,
   getAllToursFromDB,
+  getTourBySlugFromDB,
   updateTourIntoDB,
   deleteTourFromDB,
 };

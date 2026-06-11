@@ -29,6 +29,18 @@ const getAllTours = catchAsync(async (req, res) => {
   });
 });
 
+const getATour = catchAsync(async (req, res) => {
+  const { slug } = req.params;
+  const result = await TourServices.getTourBySlugFromDB(slug as string);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Tour retrieved successfully",
+    data: result,
+  });
+});
+
 const updateTour = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await TourServices.updateTourIntoDB(id as string, req.body);
@@ -56,6 +68,7 @@ const deleteTour = catchAsync(async (req, res) => {
 export const TourControllers = {
   createTour,
   getAllTours,
+  getATour,
   updateTour,
   deleteTour,
 };

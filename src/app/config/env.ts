@@ -14,11 +14,26 @@ interface EnvVars {
   BCRYPT_SALT_ROUNDS: number;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
+  SUPER_ADMIN_PHONE: string;
+  SUPER_ADMIN_PICTURE: string;
+  SUPER_ADMIN_ADDRESS: string;
   GOOGLE_CLIENT_ID: string;
   GOOGLE_CLIENT_SECRET: string;
   GOOGLE_CALLBACK_URL: string;
   EXPRESS_SESSION_SECRET: string;
   FRONTEND_URL: string;
+  SSL: {
+    STORE_ID: string;
+    STORE_PASSWORD: string;
+    PAYMENT_URL: string;
+    VALIDATION_URL: string;
+    SUCCEEDED_FRONTEND_URL: string;
+    FAILED_FRONTEND_URL: string;
+    CANCELLED_FRONTEND_URL: string;
+    SUCCEEDED_BACKEND_URL: string;
+    FAILED_BACKEND_URL: string;
+    CANCELLED_BACKEND_URL: string;
+  };
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -34,11 +49,24 @@ const loadEnvVars = (): EnvVars => {
     "BCRYPT_SALT_ROUNDS",
     "SUPER_ADMIN_EMAIL",
     "SUPER_ADMIN_PASSWORD",
+    "SUPER_ADMIN_PHONE",
+    "SUPER_ADMIN_PICTURE",
+    "SUPER_ADMIN_ADDRESS",
     "GOOGLE_CLIENT_ID",
     "GOOGLE_CLIENT_SECRET",
     "GOOGLE_CALLBACK_URL",
     "EXPRESS_SESSION_SECRET",
     "FRONTEND_URL",
+    "SSL_STORE_ID",
+    "SSL_STORE_PASSWORD",
+    "SSL_PAYMENT_URL",
+    "SSL_VALIDATION_URL",
+    "SSL_SUCCEEDED_FRONTEND_URL",
+    "SSL_FAILED_FRONTEND_URL",
+    "SSL_CANCELLED_FRONTEND_URL",
+    "SSL_SUCCEEDED_BACKEND_URL",
+    "SSL_FAILED_BACKEND_URL",
+    "SSL_CANCELLED_BACKEND_URL",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -63,11 +91,26 @@ const loadEnvVars = (): EnvVars => {
     BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
+    SUPER_ADMIN_PHONE: process.env.SUPER_ADMIN_PHONE as string,
+    SUPER_ADMIN_PICTURE: process.env.SUPER_ADMIN_PICTURE as string,
+    SUPER_ADMIN_ADDRESS: process.env.SUPER_ADMIN_ADDRESS as string,
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID as string,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET as string,
     GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL as string,
     EXPRESS_SESSION_SECRET: process.env.EXPRESS_SESSION_SECRET as string,
     FRONTEND_URL: process.env.FRONTEND_URL as string,
+    SSL: {
+      STORE_ID: process.env.SSL_STORE_ID as string,
+      STORE_PASSWORD: process.env.SSL_STORE_PASSWORD as string,
+      PAYMENT_URL: process.env.SSL_PAYMENT_URL as string,
+      VALIDATION_URL: process.env.SSL_VALIDATION_URL as string,
+      SUCCEEDED_FRONTEND_URL: process.env.SSL_SUCCEEDED_FRONTEND_URL as string,
+      FAILED_FRONTEND_URL: process.env.SSL_FAILED_FRONTEND_URL as string,
+      CANCELLED_FRONTEND_URL: process.env.SSL_CANCELLED_FRONTEND_URL as string,
+      SUCCEEDED_BACKEND_URL: process.env.SSL_SUCCEEDED_BACKEND_URL as string,
+      FAILED_BACKEND_URL: process.env.SSL_FAILED_BACKEND_URL as string,
+      CANCELLED_BACKEND_URL: process.env.SSL_CANCELLED_BACKEND_URL as string,
+    },
   };
 };
 

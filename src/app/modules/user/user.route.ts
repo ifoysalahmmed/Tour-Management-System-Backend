@@ -16,14 +16,20 @@ router.post(
 
 router.get(
   "/",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   UserControllers.getAllUsers,
+);
+
+router.get(
+  "/:email",
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
+  UserControllers.getAUser,
 );
 
 router.patch(
   "/:id",
-  validateBody(updateUserZodSchema),
   checkAuth(...Object.values(UserRole)),
+  validateBody(updateUserZodSchema),
   UserControllers.updateUser,
 );
 

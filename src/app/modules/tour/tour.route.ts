@@ -10,23 +10,25 @@ const router = Router();
 
 router.post(
   "/create",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(createTourZodSchema),
   TourControllers.createTour,
 );
 
 router.get("/", TourControllers.getAllTours);
 
+router.get("/:slug", TourControllers.getATour);
+
 router.patch(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(updateTourZodSchema),
   TourControllers.updateTour,
 );
 
 router.delete(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   TourControllers.deleteTour,
 );
 

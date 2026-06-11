@@ -26,15 +26,15 @@ const refreshAccessToken = async (refreshToken: string) => {
     );
   }
 
-  if (user.isActive === UserStatus.BLOCKED) {
+  if (user.isActive === UserStatus.Inactive) {
+    throw new AppError(status.FORBIDDEN, "Your account is currently inactive.");
+  }
+
+  if (user.isActive === UserStatus.Blocked) {
     throw new AppError(
       status.FORBIDDEN,
       "Your account has been blocked. Please contact support.",
     );
-  }
-
-  if (user.isActive === UserStatus.INACTIVE) {
-    throw new AppError(status.FORBIDDEN, "Your account is currently inactive.");
   }
 
   if (user.isDeleted) {

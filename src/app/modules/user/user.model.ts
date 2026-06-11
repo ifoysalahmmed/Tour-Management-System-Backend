@@ -21,10 +21,24 @@ const userSchema = new Schema<IUser>(
       type: String,
       select: false,
     },
+    auths: [
+      {
+        _id: false,
+        providerId: {
+          type: String,
+          required: true,
+        },
+        provider: {
+          type: String,
+          required: true,
+          enum: ["google", "credentials"],
+        },
+      },
+    ],
     role: {
       type: String,
       enum: Object.values(UserRole),
-      default: UserRole.USER,
+      default: UserRole.User,
     },
     phone: {
       type: String,
@@ -38,33 +52,19 @@ const userSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
-    isDeleted: {
+    isVerified: {
       type: Boolean,
       default: false,
     },
     isActive: {
       type: String,
       enum: Object.values(UserStatus),
-      default: UserStatus.ACTIVE,
+      default: UserStatus.Active,
     },
-    isVerified: {
+    isDeleted: {
       type: Boolean,
       default: false,
     },
-    auths: [
-      {
-        _id: false,
-        provider: {
-          type: String,
-          required: true,
-          enum: ["google", "credentials"],
-        },
-        providerId: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
   },
   {
     timestamps: true,

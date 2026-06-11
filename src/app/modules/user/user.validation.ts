@@ -54,17 +54,17 @@ export const createUserZodSchema = z
         message: "Address must be at most 200 characters long",
       })
       .optional(),
+    isVerified: z
+      .boolean({
+        error: "isVerified must be true or false",
+      })
+      .optional(),
     isActive: z
       .enum(Object.values(UserStatus) as [string, ...string[]])
       .optional(),
     isDeleted: z
       .boolean({
         error: "isDeleted must be true or false",
-      })
-      .optional(),
-    isVerified: z
-      .boolean({
-        error: "isVerified must be true or false",
       })
       .optional(),
   })

@@ -1,36 +1,36 @@
 import type { Types } from "mongoose";
 
 export enum UserRole {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  ADMIN = "ADMIN",
-  USER = "USER",
-  GUIDE = "GUIDE",
+  SuperAdmin = "SUPER_ADMIN",
+  Admin = "ADMIN",
+  User = "USER",
+  Guide = "GUIDE",
 }
 
 export enum UserStatus {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  BLOCKED = "BLOCKED",
+  Active = "ACTIVE",
+  Inactive = "INACTIVE",
+  Blocked = "BLOCKED",
 }
 
 /** Tracks how a user authenticated (e.g. credentials or OAuth) */
 export interface IAuthProvider {
+  providerId: string; // OAuth provider's unique user ID (e.g. Google subject) or email for credentials
   provider: "google" | "credentials"; // "Credentials" | "Google"
-  providerId: string; // OAuth provider's unique user ID (e.g. Google sub)
 }
 
 export interface IUser {
   name: string;
   email: string;
   password?: string; // Undefined for OAuth-only users
+  auths: IAuthProvider[]; // Supports multiple auth providers per user
   role: UserRole;
   phone?: string;
   picture?: string;
   address?: string;
-  isDeleted?: boolean;
-  isActive?: UserStatus;
   isVerified?: boolean;
-  auths: IAuthProvider[]; // Supports multiple auth providers per user
+  isActive?: UserStatus;
+  isDeleted?: boolean;
   bookings?: Types.ObjectId[];
   guides?: Types.ObjectId[];
 }

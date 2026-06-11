@@ -13,7 +13,7 @@ const router = Router();
 
 router.post(
   "/create",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(createDivisionZodSchema),
   DivisionControllers.createDivision,
 );
@@ -24,14 +24,14 @@ router.get("/:slug", DivisionControllers.getADivision);
 
 router.patch(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   validateBody(updateDivisionZodSchema),
   DivisionControllers.updateDivision,
 );
 
 router.delete(
   "/:id",
-  checkAuth(UserRole.ADMIN, UserRole.SUPER_ADMIN),
+  checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   DivisionControllers.deleteDivision,
 );
 

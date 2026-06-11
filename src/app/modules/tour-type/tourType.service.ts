@@ -28,6 +28,16 @@ const getAllTourTypesFromDB = async (query: Record<string, string>) => {
   return { tourTypes, meta };
 };
 
+const getTourTypeByIdFromDB = async (id: string) => {
+  const tourType = await TourTypeModel.findById(id);
+
+  if (!tourType) {
+    throw new AppError(status.NOT_FOUND, "Tour type not found");
+  }
+
+  return tourType;
+};
+
 const updateTourTypeIntoDB = async (
   id: string,
   payload: Partial<ITourType>,
@@ -63,6 +73,7 @@ const deleteTourTypeFromDB = async (id: string) => {
 export const TourTypeServices = {
   createTourTypeIntoDB,
   getAllTourTypesFromDB,
+  getTourTypeByIdFromDB,
   updateTourTypeIntoDB,
   deleteTourTypeFromDB,
 };

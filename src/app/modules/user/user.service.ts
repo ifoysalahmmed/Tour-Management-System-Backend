@@ -25,8 +25,8 @@ const createUserIntoDB = async (
   );
 
   const authProvider: IAuthProvider = {
-    provider: "credentials",
     providerId: email,
+    provider: "credentials",
   };
 
   return await UserModel.create({
@@ -58,6 +58,16 @@ const getAllUsersFromDB = async (query: Record<string, string>) => {
   };
 };
 
+const getUserByEmailFromDB = async (email: string) => {
+  const user = await UserModel.findOne({ email });
+
+  if (!user) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  return user;
+};
+
 const updateUserIntoDB = async (
   userId: string,
   payload: Partial<IUser>,
@@ -69,15 +79,15 @@ const updateUserIntoDB = async (
     throw new AppError(status.NOT_FOUND, "User not found");
   }
 
+  if (targetUser.isActive === UserStatus.Blocked) {
+    throw new AppError(status.FORBIDDEN, "Cannot update a blocked user");
+  }
+
   if (targetUser.isDeleted) {
     throw new AppError(status.FORBIDDEN, "Cannot update a deleted user");
   }
 
-  if (targetUser.isActive === UserStatus.BLOCKED) {
-    throw new AppError(status.FORBIDDEN, "Cannot update a blocked user");
-  }
-
-  const { auths, email, bookings, guides, ...safePayload } =
+  const { email, auths, bookings, guides, ...safePayload } =
     payload as IUser & {
       bookings?: unknown;
       guides?: unknown;
@@ -95,7 +105,7 @@ const updateUserIntoDB = async (
   const isSelf = requesterId === userId;
 
   if (safePayload.role) {
-    if (requesterRole === UserRole.USER || requesterRole === UserRole.GUIDE) {
+    if (requesterRole === UserRole.User || requesterRole === UserRole.Guide) {
       throw new AppError(status.FORBIDDEN, "Not authorized to update role");
     }
 
@@ -103,10 +113,10 @@ const updateUserIntoDB = async (
       throw new AppError(status.FORBIDDEN, "Cannot update your own role");
     }
 
-    if (requesterRole === UserRole.ADMIN) {
+    if (requesterRole === UserRole.Admin) {
       if (
-        safePayload.role === UserRole.ADMIN ||
-        safePayload.role === UserRole.SUPER_ADMIN
+        safePayload.role === UserRole.Admin ||
+        safePayload.role === UserRole.SuperAdmin
       ) {
         throw new AppError(
           status.FORBIDDEN,
@@ -114,7 +124,7 @@ const updateUserIntoDB = async (
         );
       }
 
-      if (targetUser.role === UserRole.SUPER_ADMIN) {
+      if (targetUser.role === UserRole.SuperAdmin) {
         throw new AppError(
           status.FORBIDDEN,
           "Admin cannot modify a super admin's account",
@@ -124,11 +134,11 @@ const updateUserIntoDB = async (
   }
 
   if (
+    safePayload.isVerified !== undefined ||
     safePayload.isActive !== undefined ||
-    safePayload.isDeleted !== undefined ||
-    safePayload.isVerified !== undefined
+    safePayload.isDeleted !== undefined
   ) {
-    if (requesterRole === UserRole.USER || requesterRole === UserRole.GUIDE) {
+    if (requesterRole === UserRole.User || requesterRole === UserRole.Guide) {
       throw new AppError(
         status.FORBIDDEN,
         "Not authorized to update user status",
@@ -136,8 +146,8 @@ const updateUserIntoDB = async (
     }
 
     if (
-      requesterRole === UserRole.ADMIN &&
-      targetUser.role === UserRole.SUPER_ADMIN
+      requesterRole === UserRole.Admin &&
+      targetUser.role === UserRole.SuperAdmin
     ) {
       throw new AppError(
         status.FORBIDDEN,
@@ -155,5 +165,6 @@ const updateUserIntoDB = async (
 export const UserServices = {
   createUserIntoDB,
   getAllUsersFromDB,
+  getUserByEmailFromDB,
   updateUserIntoDB,
 };
