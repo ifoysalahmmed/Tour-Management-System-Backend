@@ -34,6 +34,19 @@ interface EnvVars {
     FAILED_BACKEND_URL: string;
     CANCELLED_BACKEND_URL: string;
   };
+  CLOUDINARY: {
+    CLOUD_NAME: string;
+    API_KEY: string;
+    API_SECRET: string;
+    FOLDER_NAME: string;
+    MAX_FILE_SIZE: number;
+    ALLOWED_FORMATS: string[];
+    MAX_IMAGE_WIDTH: number;
+    MAX_IMAGE_HEIGHT: number;
+    IMAGE_QUALITY: number;
+    IMAGE_CROP: string;
+    IMAGE_GRAVITY: string;
+  };
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -67,6 +80,17 @@ const loadEnvVars = (): EnvVars => {
     "SSL_SUCCEEDED_BACKEND_URL",
     "SSL_FAILED_BACKEND_URL",
     "SSL_CANCELLED_BACKEND_URL",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+    "CLOUDINARY_FOLDER_NAME",
+    "CLOUDINARY_MAX_FILE_SIZE",
+    "CLOUDINARY_ALLOWED_FORMATS",
+    "CLOUDINARY_MAX_IMAGE_WIDTH",
+    "CLOUDINARY_MAX_IMAGE_HEIGHT",
+    "CLOUDINARY_IMAGE_QUALITY",
+    "CLOUDINARY_IMAGE_CROP",
+    "CLOUDINARY_IMAGE_GRAVITY",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -110,6 +134,21 @@ const loadEnvVars = (): EnvVars => {
       SUCCEEDED_BACKEND_URL: process.env.SSL_SUCCEEDED_BACKEND_URL as string,
       FAILED_BACKEND_URL: process.env.SSL_FAILED_BACKEND_URL as string,
       CANCELLED_BACKEND_URL: process.env.SSL_CANCELLED_BACKEND_URL as string,
+    },
+    CLOUDINARY: {
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+      API_KEY: process.env.CLOUDINARY_API_KEY as string,
+      API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+      FOLDER_NAME: process.env.CLOUDINARY_FOLDER_NAME as string,
+      MAX_FILE_SIZE: Number(process.env.CLOUDINARY_MAX_FILE_SIZE),
+      ALLOWED_FORMATS: (process.env.CLOUDINARY_ALLOWED_FORMATS as string)
+        .split(",")
+        .map((f) => f.trim()),
+      MAX_IMAGE_WIDTH: Number(process.env.CLOUDINARY_MAX_IMAGE_WIDTH),
+      MAX_IMAGE_HEIGHT: Number(process.env.CLOUDINARY_MAX_IMAGE_HEIGHT),
+      IMAGE_QUALITY: Number(process.env.CLOUDINARY_IMAGE_QUALITY),
+      IMAGE_CROP: process.env.CLOUDINARY_IMAGE_CROP as string,
+      IMAGE_GRAVITY: process.env.CLOUDINARY_IMAGE_GRAVITY as string,
     },
   };
 };
