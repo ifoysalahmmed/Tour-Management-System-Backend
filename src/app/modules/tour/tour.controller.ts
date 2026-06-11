@@ -8,7 +8,7 @@ import { TourServices } from "./tour.service.js";
 const createTour = catchAsync(async (req, res) => {
   if (Array.isArray(req.files) && req.files.length > 0) {
     req.body.images = await Promise.all(
-      req.files.map((file) => uploadToCloudinary(file.buffer)),
+      req.files.map((file) => uploadToCloudinary(file.buffer, { filename: file.originalname })),
     );
   }
 
@@ -54,7 +54,7 @@ const updateTour = catchAsync(async (req, res) => {
 
   if (Array.isArray(req.files) && req.files.length > 0) {
     updateData.images = await Promise.all(
-      req.files.map((file) => uploadToCloudinary(file.buffer)),
+      req.files.map((file) => uploadToCloudinary(file.buffer, { filename: file.originalname })),
     );
   }
 

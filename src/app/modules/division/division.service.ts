@@ -1,5 +1,6 @@
 import status from "http-status";
 
+import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
 import { AppError } from "../../errors/app.error.js";
 import { TourModel } from "../tour/tour.model.js";
 import type { IDivision } from "./division.interface.js";
@@ -39,6 +40,10 @@ const updateDivisionIntoDB = async (
 
   if (!targetDivision) {
     throw new AppError(status.NOT_FOUND, "Division not found");
+  }
+
+  if (payload.thumbnail && targetDivision.thumbnail) {
+    await deleteFromCloudinary(targetDivision.thumbnail);
   }
 
   return await DivisionModel.findByIdAndUpdate(id, payload, {

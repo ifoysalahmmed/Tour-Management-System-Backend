@@ -8,7 +8,7 @@ import { UserServices } from "./user.service.js";
 
 const createUser = catchAsync(async (req, res) => {
   if (req.file) {
-    req.body.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250 });
+    req.body.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250, filename: req.file.originalname });
   }
 
   const result = await UserServices.createUserIntoDB(req.body);
@@ -53,7 +53,7 @@ const updateUser = catchAsync(async (req, res) => {
   const decodedToken = req.user as JwtPayload;
 
   if (req.file) {
-    updateData.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250 });
+    updateData.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250, filename: req.file.originalname });
   }
 
   const result = await UserServices.updateUserIntoDB(

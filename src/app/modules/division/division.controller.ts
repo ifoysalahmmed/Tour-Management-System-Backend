@@ -7,7 +7,7 @@ import { DivisionServices } from "./division.service.js";
 
 const createDivision = catchAsync(async (req, res) => {
   if (req.file) {
-    req.body.thumbnail = await uploadToCloudinary(req.file.buffer);
+    req.body.thumbnail = await uploadToCloudinary(req.file.buffer, { filename: req.file.originalname });
   }
 
   const result = await DivisionServices.createDivisionIntoDB(req.body);
@@ -48,7 +48,7 @@ const updateDivision = catchAsync(async (req, res) => {
   const updateData = req.body;
 
   if (req.file) {
-    updateData.thumbnail = await uploadToCloudinary(req.file.buffer);
+    updateData.thumbnail = await uploadToCloudinary(req.file.buffer, { filename: req.file.originalname });
   }
 
   const result = await DivisionServices.updateDivisionIntoDB(

@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 
+import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
 import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
@@ -154,6 +155,10 @@ const updateUserIntoDB = async (
         "Admin cannot modify a super admin's account",
       );
     }
+  }
+
+  if (safePayload.picture && targetUser.picture) {
+    await deleteFromCloudinary(targetUser.picture);
   }
 
   return await UserModel.findByIdAndUpdate(userId, safePayload, {

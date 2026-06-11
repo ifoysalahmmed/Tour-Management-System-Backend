@@ -1,5 +1,6 @@
 import status from "http-status";
 
+import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
 import { AppError } from "../../errors/app.error.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { DivisionModel } from "../division/division.model.js";
@@ -99,6 +100,10 @@ const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
       status.BAD_REQUEST,
       "End date cannot be before start date",
     );
+  }
+
+  if (payload.images?.length && targetTour.images?.length) {
+    await Promise.all(targetTour.images.map(deleteFromCloudinary));
   }
 
   return await TourModel.findByIdAndUpdate(id, payload, {
