@@ -1,5 +1,6 @@
 import { Router } from "express";
 
+import upload from "../../config/multer.config.js";
 import checkAuth from "../../middlewares/checkAuth.middleware.js";
 import validateBody from "../../middlewares/validateBody.middleware.js";
 import { UserControllers } from "./user.controller.js";
@@ -10,6 +11,7 @@ const router = Router();
 
 router.post(
   "/register",
+  upload.single("picture"),
   validateBody(createUserZodSchema),
   UserControllers.createUser,
 );
@@ -29,6 +31,7 @@ router.get(
 router.patch(
   "/:id",
   checkAuth(...Object.values(UserRole)),
+  upload.single("picture"),
   validateBody(updateUserZodSchema),
   UserControllers.updateUser,
 );

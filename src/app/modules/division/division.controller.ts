@@ -1,10 +1,15 @@
 import status from "http-status";
 
+import { uploadToCloudinary } from "../../config/cloudinary.config.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { DivisionServices } from "./division.service.js";
 
 const createDivision = catchAsync(async (req, res) => {
+  if (req.file) {
+    req.body.thumbnail = await uploadToCloudinary(req.file.buffer);
+  }
+
   const result = await DivisionServices.createDivisionIntoDB(req.body);
 
   sendResponse(res, {
@@ -40,9 +45,15 @@ const getADivision = catchAsync(async (req, res) => {
 
 const updateDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
+  const updateData = req.body;
+
+  if (req.file) {
+    updateData.thumbnail = await uploadToCloudinary(req.file.buffer);
+  }
+
   const result = await DivisionServices.updateDivisionIntoDB(
     id as string,
-    req.body,
+    updateData,
   );
 
   sendResponse(res, {

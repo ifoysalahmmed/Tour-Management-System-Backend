@@ -1,11 +1,16 @@
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 
+import { uploadToCloudinary } from "../../config/cloudinary.config.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { UserServices } from "./user.service.js";
 
 const createUser = catchAsync(async (req, res) => {
+  if (req.file) {
+    req.body.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250 });
+  }
+
   const result = await UserServices.createUserIntoDB(req.body);
 
   sendResponse(res, {
@@ -46,6 +51,10 @@ const updateUser = catchAsync(async (req, res) => {
   const { id } = req.params;
   const updateData = req.body;
   const decodedToken = req.user as JwtPayload;
+
+  if (req.file) {
+    updateData.picture = await uploadToCloudinary(req.file.buffer, { width: 250, height: 250 });
+  }
 
   const result = await UserServices.updateUserIntoDB(
     id as string,
