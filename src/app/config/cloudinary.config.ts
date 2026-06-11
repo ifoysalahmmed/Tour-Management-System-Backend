@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 
+import { slugify } from "../utils/slugify.js";
 import { envVars } from "./env.js";
 
 cloudinary.config({
@@ -18,9 +19,30 @@ const GRAVITY_SUPPORTED_CROPS = new Set([
   "auto_pad",
 ]);
 
+const buildPublicId = (filename: string): string => {
+  const lastDot = filename.lastIndexOf(".");
+  const name = lastDot !== -1 ? filename.slice(0, lastDot) : filename;
+  const base36 = Math.random().toString(36).slice(2);
+  return `${base36}-${Date.now()}-${slugify(name)}`;
+};
+
+export const deleteFromCloudinary = async (url: string): Promise<void> => {
+  const uploadIndex = url.indexOf("/upload/");
+  if (uploadIndex === -1) return;
+
+  const resourceTypeMatch = url.slice(0, uploadIndex).match(/\/([^/]+)$/);
+  const resourceType = resourceTypeMatch?.[1] ?? "image";
+
+  const afterUpload = url.slice(uploadIndex + 8).replace(/^v\d+\//, "");
+  const lastDot = afterUpload.lastIndexOf(".");
+  const publicId = lastDot !== -1 ? afterUpload.slice(0, lastDot) : afterUpload;
+
+  await cloudinary.uploader.destroy(publicId, { resource_type: resourceType });
+};
+
 export const uploadToCloudinary = (
   buffer: Buffer,
-  options?: { width?: number; height?: number },
+  options?: { width?: number; height?: number; filename?: string },
 ): Promise<string> =>
   new Promise((resolve, reject) => {
     const crop = envVars.CLOUDINARY.IMAGE_CROP;
@@ -31,6 +53,9 @@ export const uploadToCloudinary = (
       {
         resource_type: "auto",
         folder: envVars.CLOUDINARY.FOLDER_NAME,
+        ...(options?.filename && {
+          public_id: buildPublicId(options.filename),
+        }),
         transformation: {
           width,
           height,
