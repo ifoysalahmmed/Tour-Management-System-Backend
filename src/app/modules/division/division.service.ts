@@ -68,6 +68,10 @@ const deleteDivisionFromDB = async (id: string) => {
     );
   }
 
+  if (targetDivision.thumbnail) {
+    await deleteFromCloudinary(targetDivision.thumbnail);
+  }
+
   return await DivisionModel.findByIdAndDelete(id);
 };
 
