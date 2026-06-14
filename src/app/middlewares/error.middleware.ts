@@ -1,6 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import jwt from "jsonwebtoken";
+import multer from "multer";
 import type { Error as MongooseError } from "mongoose";
 import * as z from "zod";
 
@@ -75,6 +76,26 @@ const errorHandler = (
       statusCode: status.BAD_REQUEST,
       success: false,
       message: "Invalid resource ID format",
+    });
+    return;
+  }
+
+  if (error instanceof multer.MulterError) {
+    const multerMessages: Record<string, string> = {
+      LIMIT_UNEXPECTED_FILE:
+        "Uploading multiple files in a single-file field.",
+      LIMIT_FILE_SIZE: "File is too large. Please upload a smaller file.",
+      LIMIT_FILE_COUNT: "Too many files uploaded at once.",
+      LIMIT_FIELD_COUNT: "Too many form fields in the request.",
+      LIMIT_FIELD_KEY: "Form field name is too long.",
+      LIMIT_FIELD_VALUE: "Form field value is too long.",
+      LIMIT_PART_COUNT: "Too many parts in the multipart request.",
+    };
+
+    sendResponse(res, {
+      statusCode: status.BAD_REQUEST,
+      success: false,
+      message: multerMessages[error.code] ?? `File upload error: ${error.message}`,
     });
     return;
   }
