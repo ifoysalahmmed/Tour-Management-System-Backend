@@ -1,16 +1,19 @@
 import status from "http-status";
 
-import { uploadToCloudinary } from "../../config/cloudinary.config.js";
+import { uploadFilesWithRollback } from "../../helpers/cloudinary/index.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { DivisionServices } from "./division.service.js";
 
 const createDivision = catchAsync(async (req, res) => {
-  if (req.file) {
-    req.body.thumbnail = await uploadToCloudinary(req.file.buffer, { filename: req.file.originalname });
-  }
+  const create = async ([thumbnail]: string[]) => {
+    if (thumbnail) req.body.thumbnail = thumbnail;
+    return DivisionServices.createDivisionIntoDB(req.body);
+  };
 
-  const result = await DivisionServices.createDivisionIntoDB(req.body);
+  const result = req.file
+    ? await uploadFilesWithRollback(req.file, create)
+    : await DivisionServices.createDivisionIntoDB(req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,
@@ -45,16 +48,15 @@ const getADivision = catchAsync(async (req, res) => {
 
 const updateDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body;
 
-  if (req.file) {
-    updateData.thumbnail = await uploadToCloudinary(req.file.buffer, { filename: req.file.originalname });
-  }
+  const update = async ([thumbnail]: string[]) => {
+    if (thumbnail) req.body.thumbnail = thumbnail;
+    return DivisionServices.updateDivisionIntoDB(id as string, req.body);
+  };
 
-  const result = await DivisionServices.updateDivisionIntoDB(
-    id as string,
-    updateData,
-  );
+  const result = req.file
+    ? await uploadFilesWithRollback(req.file, update)
+    : await DivisionServices.updateDivisionIntoDB(id as string, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,

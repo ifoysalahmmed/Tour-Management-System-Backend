@@ -2,7 +2,7 @@ import bcrypt from "bcryptjs";
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 
-import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";

@@ -1,18 +1,21 @@
 import status from "http-status";
 
-import { uploadToCloudinary } from "../../config/cloudinary.config.js";
+import { uploadFilesWithRollback } from "../../helpers/cloudinary/index.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { TourServices } from "./tour.service.js";
 
 const createTour = catchAsync(async (req, res) => {
-  if (Array.isArray(req.files) && req.files.length > 0) {
-    req.body.images = await Promise.all(
-      req.files.map((file) => uploadToCloudinary(file.buffer, { filename: file.originalname })),
-    );
-  }
+  const files = Array.isArray(req.files) ? req.files : [];
 
-  const result = await TourServices.createTourIntoDB(req.body);
+  const create = async (images: string[]) => {
+    if (images.length) req.body.images = images;
+    return TourServices.createTourIntoDB(req.body);
+  };
+
+  const result = files.length
+    ? await uploadFilesWithRollback(files, create)
+    : await TourServices.createTourIntoDB(req.body);
 
   sendResponse(res, {
     statusCode: status.CREATED,
@@ -50,15 +53,16 @@ const getATour = catchAsync(async (req, res) => {
 
 const updateTour = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const updateData = req.body;
+  const files = Array.isArray(req.files) ? req.files : [];
 
-  if (Array.isArray(req.files) && req.files.length > 0) {
-    updateData.images = await Promise.all(
-      req.files.map((file) => uploadToCloudinary(file.buffer, { filename: file.originalname })),
-    );
-  }
+  const update = async (images: string[]) => {
+    if (images.length) req.body.images = images;
+    return TourServices.updateTourIntoDB(id as string, req.body);
+  };
 
-  const result = await TourServices.updateTourIntoDB(id as string, updateData);
+  const result = files.length
+    ? await uploadFilesWithRollback(files, update)
+    : await TourServices.updateTourIntoDB(id as string, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,

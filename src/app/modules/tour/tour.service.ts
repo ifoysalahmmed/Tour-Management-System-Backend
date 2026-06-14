@@ -1,6 +1,6 @@
 import status from "http-status";
 
-import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { AppError } from "../../errors/app.error.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { DivisionModel } from "../division/division.model.js";
@@ -117,6 +117,10 @@ const deleteTourFromDB = async (id: string) => {
 
   if (!targetTour) {
     throw new AppError(status.NOT_FOUND, "Tour not found");
+  }
+
+  if (targetTour.images?.length) {
+    await Promise.all(targetTour.images.map(deleteFromCloudinary));
   }
 
   return await TourModel.findByIdAndDelete(id);

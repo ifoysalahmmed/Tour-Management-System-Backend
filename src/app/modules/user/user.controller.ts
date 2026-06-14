@@ -1,7 +1,7 @@
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 
-import { uploadToCloudinary } from "../../config/cloudinary.config.js";
+import { uploadToCloudinary } from "../../helpers/cloudinary/index.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { UserServices } from "./user.service.js";

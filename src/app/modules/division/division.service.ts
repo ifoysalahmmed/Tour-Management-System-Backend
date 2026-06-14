@@ -1,6 +1,6 @@
 import status from "http-status";
 
-import { deleteFromCloudinary } from "../../config/cloudinary.config.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { AppError } from "../../errors/app.error.js";
 import { TourModel } from "../tour/tour.model.js";
 import type { IDivision } from "./division.interface.js";
