@@ -1,5 +1,4 @@
-import jwt from "jsonwebtoken";
-import type { SignOptions } from "jsonwebtoken";
+import jwt , { type SignOptions } from "jsonwebtoken";
 
 import type { ITokenPayload } from "../modules/auth/auth.interface.js";
 
