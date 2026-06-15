@@ -1,28 +1,42 @@
 import status from "http-status";
 
-import { uploadFilesWithRollback } from "../../helpers/cloudinary/index.js";
+import {
+  deleteFromCloudinary,
+  uploadToCloudinary,
+} from "../../helpers/cloudinary/index.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { TourServices } from "./tour.service.js";
 
 const createTour = catchAsync(async (req, res) => {
   const files = Array.isArray(req.files) ? req.files : [];
+  let uploadedImages: string[] = [];
 
-  const create = async (images: string[]) => {
-    if (images.length) req.body.images = images;
-    return TourServices.createTourIntoDB(req.body);
-  };
+  if (files.length) {
+    uploadedImages = await Promise.all(
+      files.map((file) =>
+        uploadToCloudinary(file.buffer, { filename: file.originalname }),
+      ),
+    );
+    req.body.images = uploadedImages;
+  }
 
-  const result = files.length
-    ? await uploadFilesWithRollback(files, create)
-    : await TourServices.createTourIntoDB(req.body);
+  try {
+    const result = await TourServices.createTourIntoDB(req.body);
 
-  sendResponse(res, {
-    statusCode: status.CREATED,
-    success: true,
-    message: "Tour created successfully",
-    data: result,
-  });
+    sendResponse(res, {
+      statusCode: status.CREATED,
+      success: true,
+      message: "Tour created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (uploadedImages.length) {
+      await Promise.allSettled(uploadedImages.map(deleteFromCloudinary));
+    }
+
+    throw error;
+  }
 });
 
 const getAllTours = catchAsync(async (req, res) => {
@@ -54,22 +68,36 @@ const getATour = catchAsync(async (req, res) => {
 const updateTour = catchAsync(async (req, res) => {
   const { id } = req.params;
   const files = Array.isArray(req.files) ? req.files : [];
+  let uploadedImages: string[] = [];
 
-  const update = async (images: string[]) => {
-    if (images.length) req.body.images = images;
-    return TourServices.updateTourIntoDB(id as string, req.body);
-  };
+  if (files.length) {
+    uploadedImages = await Promise.all(
+      files.map((file) =>
+        uploadToCloudinary(file.buffer, { filename: file.originalname }),
+      ),
+    );
+  }
 
-  const result = files.length
-    ? await uploadFilesWithRollback(files, update)
-    : await TourServices.updateTourIntoDB(id as string, req.body);
+  try {
+    const result = await TourServices.updateTourIntoDB(
+      id as string,
+      req.body,
+      uploadedImages,
+    );
 
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Tour updated successfully",
-    data: result,
-  });
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "Tour updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (uploadedImages.length) {
+      await Promise.allSettled(uploadedImages.map(deleteFromCloudinary));
+    }
+
+    throw error;
+  }
 });
 
 const deleteTour = catchAsync(async (req, res) => {

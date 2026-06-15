@@ -1,7 +1,7 @@
 import status from "http-status";
 
-import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { AppError } from "../../errors/app.error.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { DivisionModel } from "../division/division.model.js";
 import { TourTypeModel } from "../tour-type/tourType.model.js";
@@ -59,7 +59,11 @@ const getTourBySlugFromDB = async (slug: string) => {
   return tour;
 };
 
-const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
+const updateTourIntoDB = async (
+  id: string,
+  payload: TTourUpdate,
+  newImages: string[] = [],
+) => {
   const targetTour = await TourModel.findById(id);
 
   if (!targetTour) {
@@ -102,14 +106,31 @@ const updateTourIntoDB = async (id: string, payload: TTourUpdate) => {
     );
   }
 
-  if (payload.images?.length && targetTour.images?.length) {
-    await Promise.all(targetTour.images.map(deleteFromCloudinary));
+  const { deletedImages = [], ...tourPayload } = payload;
+
+  if (newImages.length || deletedImages.length) {
+    tourPayload.images = [
+      ...(targetTour.images ?? []).filter(
+        (img) => !deletedImages.includes(img),
+      ),
+      ...newImages,
+    ];
   }
 
-  return await TourModel.findByIdAndUpdate(id, payload, {
+  const updatedTour = await TourModel.findByIdAndUpdate(id, tourPayload, {
     returnDocument: "after",
     runValidators: true,
   });
+
+  if (!updatedTour) {
+    throw new AppError(status.INTERNAL_SERVER_ERROR, "Failed to update tour");
+  }
+
+  if (deletedImages.length) {
+    await Promise.allSettled(deletedImages.map(deleteFromCloudinary));
+  }
+
+  return updatedTour;
 };
 
 const deleteTourFromDB = async (id: string) => {
@@ -119,11 +140,17 @@ const deleteTourFromDB = async (id: string) => {
     throw new AppError(status.NOT_FOUND, "Tour not found");
   }
 
-  if (targetTour.images?.length) {
-    await Promise.all(targetTour.images.map(deleteFromCloudinary));
+  const deletedTour = await TourModel.findByIdAndDelete(id);
+
+  if (!deletedTour) {
+    throw new AppError(status.INTERNAL_SERVER_ERROR, "Failed to delete tour");
   }
 
-  return await TourModel.findByIdAndDelete(id);
+  if (targetTour.images?.length) {
+    await Promise.allSettled(targetTour.images.map(deleteFromCloudinary));
+  }
+
+  return deletedTour;
 };
 
 export const TourServices = {
