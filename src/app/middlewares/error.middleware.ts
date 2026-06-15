@@ -1,8 +1,8 @@
 import type { NextFunction, Request, Response } from "express";
 import status from "http-status";
 import jwt from "jsonwebtoken";
-import multer from "multer";
 import type { Error as MongooseError } from "mongoose";
+import multer from "multer";
 import * as z from "zod";
 
 import { envVars } from "../config/env.js";
