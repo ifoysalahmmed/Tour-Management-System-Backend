@@ -7,27 +7,7 @@ import type { IDivision } from "./division.interface.js";
 import { DivisionModel } from "./division.model.js";
 
 const createDivisionIntoDB = async (payload: IDivision) => {
-  const session = await DivisionModel.startSession();
-  session.startTransaction();
-
-  try {
-    const [division] = await DivisionModel.create([payload], { session });
-
-    if (!division) {
-      throw new AppError(
-        status.INTERNAL_SERVER_ERROR,
-        "Failed to create division",
-      );
-    }
-
-    await session.commitTransaction();
-    return division;
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
-  }
+  return await DivisionModel.create(payload);
 };
 
 const getAllDivisionsFromDB = async () => {
@@ -62,35 +42,23 @@ const updateDivisionIntoDB = async (
     throw new AppError(status.NOT_FOUND, "Division not found");
   }
 
-  const session = await DivisionModel.startSession();
-  session.startTransaction();
+  const updatedDivision = await DivisionModel.findByIdAndUpdate(id, payload, {
+    returnDocument: "after",
+    runValidators: true,
+  });
 
-  try {
-    if (payload.thumbnail && targetDivision.thumbnail) {
-      await deleteFromCloudinary(targetDivision.thumbnail);
-    }
-
-    const updatedDivision = await DivisionModel.findByIdAndUpdate(id, payload, {
-      returnDocument: "after",
-      runValidators: true,
-      session,
-    });
-
-    if (!updatedDivision) {
-      throw new AppError(
-        status.INTERNAL_SERVER_ERROR,
-        "Failed to update division",
-      );
-    }
-
-    await session.commitTransaction();
-    return updatedDivision;
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
+  if (!updatedDivision) {
+    throw new AppError(
+      status.INTERNAL_SERVER_ERROR,
+      "Failed to update division",
+    );
   }
+
+  if (payload.thumbnail && targetDivision.thumbnail) {
+    await deleteFromCloudinary(targetDivision.thumbnail);
+  }
+
+  return updatedDivision;
 };
 
 const deleteDivisionFromDB = async (id: string) => {
@@ -109,11 +77,13 @@ const deleteDivisionFromDB = async (id: string) => {
     );
   }
 
+  const deletedDivision = await DivisionModel.findByIdAndDelete(id);
+
   if (targetDivision.thumbnail) {
     await deleteFromCloudinary(targetDivision.thumbnail);
   }
 
-  return await DivisionModel.findByIdAndDelete(id);
+  return deletedDivision;
 };
 
 export const DivisionServices = {
