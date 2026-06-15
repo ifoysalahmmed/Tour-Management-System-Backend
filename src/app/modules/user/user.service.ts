@@ -2,9 +2,9 @@ import bcrypt from "bcryptjs";
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
 
-import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { envVars } from "../../config/env.js";
 import { AppError } from "../../errors/app.error.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { QueryBuilder } from "../../utils/QueryBuilder.js";
 import { userSearchableFields } from "./user.constant.js";
 import type { IAuthProvider, IUser } from "./user.interface.js";
@@ -12,13 +12,13 @@ import { UserRole, UserStatus } from "./user.interface.js";
 import { UserModel } from "./user.model.js";
 
 const createUserIntoDB = async (
-  payload: Pick<IUser, "name" | "email" | "password">,
-) => {
-  const { name, email, password } = payload as {
+  payload: Partial<Omit<IUser, "auths">> & {
     name: string;
     email: string;
     password: string;
-  };
+  },
+) => {
+  const { email, password, ...rest } = payload;
 
   const hashedPassword = await bcrypt.hash(
     password,
@@ -31,7 +31,7 @@ const createUserIntoDB = async (
   };
 
   return await UserModel.create({
-    name,
+    ...rest,
     email,
     password: hashedPassword,
     auths: [authProvider],
@@ -157,14 +157,23 @@ const updateUserIntoDB = async (
     }
   }
 
-  if (safePayload.picture && targetUser.picture) {
-    await deleteFromCloudinary(targetUser.picture);
-  }
+  const oldPicture =
+    safePayload.picture && targetUser.picture ? targetUser.picture : null;
 
-  return await UserModel.findByIdAndUpdate(userId, safePayload, {
+  const updatedUser = await UserModel.findByIdAndUpdate(userId, safePayload, {
     returnDocument: "after",
     runValidators: true,
   });
+
+  if (!updatedUser) {
+    throw new AppError(status.INTERNAL_SERVER_ERROR, "Failed to update user");
+  }
+
+  if (oldPicture) {
+    await deleteFromCloudinary(oldPicture);
+  }
+
+  return updatedUser;
 };
 
 export const UserServices = {
