@@ -15,9 +15,15 @@ router.post(
   AuthControllers.loginWithCredentials,
 );
 
+router.post("/logout", AuthControllers.logout);
+
 router.post("/refresh-token", AuthControllers.handleRefreshToken);
 
-router.post("/logout", AuthControllers.logout);
+router.post(
+  "/change-password",
+  checkAuth(...Object.values(UserRole)),
+  AuthControllers.changePassword,
+);
 
 router.post(
   "/reset-password",
@@ -25,10 +31,12 @@ router.post(
   AuthControllers.resetPassword,
 );
 
-// Preserves the user's intended destination after successful Google login.
-// Example:
-//   /booking -> /login -> Google OAuth -> redirect to /booking
-//   /login -> Google OAuth -> redirect to /
+router.post(
+  "/set-password",
+  checkAuth(...Object.values(UserRole)),
+  AuthControllers.setPassword,
+);
+
 router.get("/google", (req: Request, res: Response) => {
   const redirectURL = req.query.redirect || "/";
 
@@ -38,9 +46,6 @@ router.get("/google", (req: Request, res: Response) => {
   })(req, res);
 });
 
-// Google redirects to this endpoint after successful authentication.
-// Example:
-//   /api/v1/auth/google/callback?state=/booking
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
