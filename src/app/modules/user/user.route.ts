@@ -23,6 +23,12 @@ router.get(
 );
 
 router.get(
+  "/me",
+  checkAuth(...Object.values(UserRole)),
+  UserControllers.getMyProfile,
+);
+
+router.get(
   "/:email",
   checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   UserControllers.getAUser,

@@ -53,6 +53,20 @@ const getAllUsers = catchAsync(async (req, res) => {
   });
 });
 
+const getMyProfile = catchAsync(async (req, res) => {
+  const decodedToken = req.user as JwtPayload;
+  const result = await UserServices.getUserByEmailFromDB(
+    decodedToken.email as string,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Profile information retrieved successfully",
+    data: result,
+  });
+});
+
 const getAUser = catchAsync(async (req, res) => {
   const { email } = req.params;
   const result = await UserServices.getUserByEmailFromDB(email as string);
@@ -105,6 +119,7 @@ const updateUser = catchAsync(async (req, res) => {
 export const UserControllers = {
   createUser,
   getAllUsers,
+  getMyProfile,
   getAUser,
   updateUser,
 };
