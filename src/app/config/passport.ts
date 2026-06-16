@@ -9,6 +9,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 
 import { UserRole } from "../modules/user/user.interface.js";
 import { UserModel } from "../modules/user/user.model.js";
+import { assertUserStatus } from "../utils/assertUserStatus.js";
 import { envVars } from "./env.js";
 
 passport.use(
@@ -31,6 +32,8 @@ passport.use(
             message: "No active user account found with this email address",
           });
         }
+
+        assertUserStatus(user);
 
         const hasGoogleAuth = user.auths.some(
           (auth) => auth.provider === "google",
@@ -107,6 +110,8 @@ passport.use(
             message: "User account created successfully with Google sign-in",
           });
         }
+
+        assertUserStatus(user);
 
         return done(null, user);
       } catch (error) {
