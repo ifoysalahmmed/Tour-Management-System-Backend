@@ -16,12 +16,7 @@ const loginWithCredentials = catchAsync(async (req, res, next) => {
     "local",
     async (err: any, user: any, info: { message: string }) => {
       if (err) {
-        return next(
-          new AppError(
-            status.UNAUTHORIZED,
-            info.message || "Credential authentication failed",
-          ),
-        );
+        return next(err);
       }
 
       if (!user) {
