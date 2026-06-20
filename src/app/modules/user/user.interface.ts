@@ -31,6 +31,8 @@ export interface IUser {
   isVerified?: boolean;
   isActive?: UserStatus;
   isDeleted?: boolean;
+  passwordChangedAt?: Date;
+  passwordResetRequestedAt?: Date;
   bookings?: Types.ObjectId[];
   guides?: Types.ObjectId[];
 }
