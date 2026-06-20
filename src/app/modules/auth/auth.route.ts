@@ -1,11 +1,17 @@
 import { Router, type Request, type Response } from "express";
 import passport from "passport";
 
+import { envVars } from "../../config/env.js";
 import checkAuth from "../../middlewares/checkAuth.middleware.js";
+import checkResetToken from "../../middlewares/checkResetToken.middleware.js";
 import validateBody from "../../middlewares/validateBody.middleware.js";
 import { UserRole } from "../user/user.interface.js";
 import { AuthControllers } from "./auth.controller.js";
-import { loginZodSchema } from "./auth.validation.js";
+import {
+  forgotPasswordZodSchema,
+  loginZodSchema,
+  resetPasswordZodSchema,
+} from "./auth.validation.js";
 
 const router = Router();
 
@@ -26,8 +32,15 @@ router.post(
 );
 
 router.post(
+  "/forgot-password",
+  validateBody(forgotPasswordZodSchema),
+  AuthControllers.forgotPassword,
+);
+
+router.post(
   "/reset-password",
-  checkAuth(...Object.values(UserRole)),
+  checkResetToken,
+  validateBody(resetPasswordZodSchema),
   AuthControllers.resetPassword,
 );
 
@@ -48,7 +61,9 @@ router.get("/google", (req: Request, res: Response) => {
 
 router.get(
   "/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
+  passport.authenticate("google", {
+    failureRedirect: envVars.FRONTEND_URL + "/login",
+  }),
   AuthControllers.handleGoogleCallback,
 );
 
