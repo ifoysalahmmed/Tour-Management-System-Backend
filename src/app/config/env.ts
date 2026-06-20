@@ -47,6 +47,13 @@ interface EnvVars {
     IMAGE_CROP: string;
     IMAGE_GRAVITY: string;
   };
+  EMAIL_SENDER: {
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_USER: string;
+    SMTP_PASS: string;
+    SMTP_FROM_EMAIL: string;
+  };
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -91,6 +98,11 @@ const loadEnvVars = (): EnvVars => {
     "CLOUDINARY_IMAGE_QUALITY",
     "CLOUDINARY_IMAGE_CROP",
     "CLOUDINARY_IMAGE_GRAVITY",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_FROM_EMAIL",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -149,6 +161,13 @@ const loadEnvVars = (): EnvVars => {
       IMAGE_QUALITY: Number(process.env.CLOUDINARY_IMAGE_QUALITY),
       IMAGE_CROP: process.env.CLOUDINARY_IMAGE_CROP as string,
       IMAGE_GRAVITY: process.env.CLOUDINARY_IMAGE_GRAVITY as string,
+    },
+    EMAIL_SENDER: {
+      SMTP_HOST: process.env.SMTP_HOST as string,
+      SMTP_PORT: Number(process.env.SMTP_PORT),
+      SMTP_USER: process.env.SMTP_USER as string,
+      SMTP_PASS: process.env.SMTP_PASS as string,
+      SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL as string,
     },
   };
 };
