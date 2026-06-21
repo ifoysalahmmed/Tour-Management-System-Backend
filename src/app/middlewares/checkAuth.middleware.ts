@@ -3,8 +3,9 @@ import status from "http-status";
 
 import { envVars } from "../config/env.js";
 import { AppError } from "../errors/app.error.js";
-import { UserStatus, type UserRole } from "../modules/user/user.interface.js";
+import { type UserRole } from "../modules/user/user.interface.js";
 import { UserModel } from "../modules/user/user.model.js";
+import { assertUserStatus } from "../utils/assertUserStatus.js";
 import { verifyAccessToken } from "../utils/jwt.js";
 
 const checkAuth = (...allowedRoles: UserRole[]) => {
@@ -35,26 +36,7 @@ const checkAuth = (...allowedRoles: UserRole[]) => {
         );
       }
 
-      if (user.isActive === UserStatus.Inactive) {
-        throw new AppError(
-          status.FORBIDDEN,
-          "Your account is currently inactive.",
-        );
-      }
-
-      if (user.isActive === UserStatus.Blocked) {
-        throw new AppError(
-          status.FORBIDDEN,
-          "Your account has been blocked. Please contact support.",
-        );
-      }
-
-      if (user.isDeleted) {
-        throw new AppError(
-          status.FORBIDDEN,
-          "This user account has been deleted.",
-        );
-      }
+      assertUserStatus(user);
 
       if (allowedRoles.length && !allowedRoles.includes(verifiedToken.role)) {
         throw new AppError(

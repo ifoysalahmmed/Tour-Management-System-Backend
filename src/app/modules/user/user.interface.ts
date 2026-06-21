@@ -1,5 +1,3 @@
-import type { Types } from "mongoose";
-
 export enum UserRole {
   SuperAdmin = "SUPER_ADMIN",
   Admin = "ADMIN",
@@ -13,17 +11,16 @@ export enum UserStatus {
   Blocked = "BLOCKED",
 }
 
-/** Tracks how a user authenticated (e.g. credentials or OAuth) */
 export interface IAuthProvider {
-  providerId: string; // OAuth provider's unique user ID (e.g. Google subject) or email for credentials
-  provider: "google" | "credentials"; // "Credentials" | "Google"
+  providerId: string;
+  provider: "google" | "credentials";
 }
 
 export interface IUser {
   name: string;
   email: string;
-  password?: string; // Undefined for OAuth-only users
-  auths: IAuthProvider[]; // Supports multiple auth providers per user
+  password?: string;
+  auths: IAuthProvider[];
   role: UserRole;
   phone?: string;
   picture?: string;
@@ -31,6 +28,6 @@ export interface IUser {
   isVerified?: boolean;
   isActive?: UserStatus;
   isDeleted?: boolean;
-  bookings?: Types.ObjectId[];
-  guides?: Types.ObjectId[];
+  passwordChangedAt?: Date;
+  passwordResetRequestedAt?: Date;
 }

@@ -1,6 +1,7 @@
 import status from "http-status";
 
 import { AppError } from "../../errors/app.error.js";
+import { deleteFromCloudinary } from "../../helpers/cloudinary/index.js";
 import { TourModel } from "../tour/tour.model.js";
 import type { IDivision } from "./division.interface.js";
 import { DivisionModel } from "./division.model.js";
@@ -41,10 +42,23 @@ const updateDivisionIntoDB = async (
     throw new AppError(status.NOT_FOUND, "Division not found");
   }
 
-  return await DivisionModel.findByIdAndUpdate(id, payload, {
+  const updatedDivision = await DivisionModel.findByIdAndUpdate(id, payload, {
     returnDocument: "after",
     runValidators: true,
   });
+
+  if (!updatedDivision) {
+    throw new AppError(
+      status.INTERNAL_SERVER_ERROR,
+      "Failed to update division",
+    );
+  }
+
+  if (payload.thumbnail && targetDivision.thumbnail) {
+    await deleteFromCloudinary(targetDivision.thumbnail);
+  }
+
+  return updatedDivision;
 };
 
 const deleteDivisionFromDB = async (id: string) => {
@@ -63,7 +77,13 @@ const deleteDivisionFromDB = async (id: string) => {
     );
   }
 
-  return await DivisionModel.findByIdAndDelete(id);
+  const deletedDivision = await DivisionModel.findByIdAndDelete(id);
+
+  if (targetDivision.thumbnail) {
+    await deleteFromCloudinary(targetDivision.thumbnail);
+  }
+
+  return deletedDivision;
 };
 
 export const DivisionServices = {

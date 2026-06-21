@@ -47,4 +47,6 @@ export type TTourCreate = Required<
     >
 >;
 
-export type TTourUpdate = Partial<Omit<ITour, "slug">>;
+export type TTourUpdate = Partial<Omit<ITour, "slug">> & {
+  deletedImages?: string[];
+};

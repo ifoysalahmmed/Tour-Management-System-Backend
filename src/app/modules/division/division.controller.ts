@@ -1,18 +1,39 @@
 import status from "http-status";
 
+import {
+  deleteFromCloudinary,
+  uploadToCloudinary,
+} from "../../helpers/cloudinary/index.js";
 import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { DivisionServices } from "./division.service.js";
 
 const createDivision = catchAsync(async (req, res) => {
-  const result = await DivisionServices.createDivisionIntoDB(req.body);
+  let uploadedThumbnail: string | undefined;
 
-  sendResponse(res, {
-    statusCode: status.CREATED,
-    success: true,
-    message: "Division created successfully",
-    data: result,
-  });
+  if (req.file) {
+    uploadedThumbnail = await uploadToCloudinary(req.file.buffer, {
+      filename: req.file.originalname,
+    });
+    req.body.thumbnail = uploadedThumbnail;
+  }
+
+  try {
+    const result = await DivisionServices.createDivisionIntoDB(req.body);
+
+    sendResponse(res, {
+      statusCode: status.CREATED,
+      success: true,
+      message: "Division created successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (uploadedThumbnail) {
+      await deleteFromCloudinary(uploadedThumbnail);
+    }
+    
+    throw error;
+  }
 });
 
 const getAllDivisions = catchAsync(async (_req, res) => {
@@ -40,17 +61,34 @@ const getADivision = catchAsync(async (req, res) => {
 
 const updateDivision = catchAsync(async (req, res) => {
   const { id } = req.params;
-  const result = await DivisionServices.updateDivisionIntoDB(
-    id as string,
-    req.body,
-  );
+  let uploadedThumbnail: string | undefined;
 
-  sendResponse(res, {
-    statusCode: status.OK,
-    success: true,
-    message: "Division updated successfully",
-    data: result,
-  });
+  if (req.file) {
+    uploadedThumbnail = await uploadToCloudinary(req.file.buffer, {
+      filename: req.file.originalname,
+    });
+    req.body.thumbnail = uploadedThumbnail;
+  }
+
+  try {
+    const result = await DivisionServices.updateDivisionIntoDB(
+      id as string,
+      req.body,
+    );
+
+    sendResponse(res, {
+      statusCode: status.OK,
+      success: true,
+      message: "Division updated successfully",
+      data: result,
+    });
+  } catch (error) {
+    if (uploadedThumbnail) {
+      await deleteFromCloudinary(uploadedThumbnail);
+    }
+
+    throw error;
+  }
 });
 
 const deleteDivision = catchAsync(async (req, res) => {

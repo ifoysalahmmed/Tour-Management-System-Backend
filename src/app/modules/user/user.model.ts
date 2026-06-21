@@ -65,6 +65,14 @@ const userSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
     },
+    passwordChangedAt: {
+      type: Date,
+      select: false,
+    },
+    passwordResetRequestedAt: {
+      type: Date,
+      select: false,
+    },
   },
   {
     timestamps: true,

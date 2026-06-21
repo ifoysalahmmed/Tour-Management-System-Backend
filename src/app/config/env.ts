@@ -11,6 +11,8 @@ interface EnvVars {
   JWT_EXPIRES_IN: string;
   JWT_REFRESH_SECRET: string;
   JWT_REFRESH_EXPIRES_IN: string;
+  JWT_RESET_SECRET: string;
+  FORGET_PASSWORD_LIMIT_MIN: number;
   BCRYPT_SALT_ROUNDS: number;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
@@ -34,6 +36,26 @@ interface EnvVars {
     FAILED_BACKEND_URL: string;
     CANCELLED_BACKEND_URL: string;
   };
+  CLOUDINARY: {
+    CLOUD_NAME: string;
+    API_KEY: string;
+    API_SECRET: string;
+    FOLDER_NAME: string;
+    MAX_FILE_SIZE: number;
+    ALLOWED_FORMATS: string[];
+    MAX_IMAGE_WIDTH: number;
+    MAX_IMAGE_HEIGHT: number;
+    IMAGE_QUALITY: number;
+    IMAGE_CROP: string;
+    IMAGE_GRAVITY: string;
+  };
+  EMAIL_SENDER: {
+    SMTP_HOST: string;
+    SMTP_PORT: number;
+    SMTP_USER: string;
+    SMTP_PASS: string;
+    SMTP_FROM_EMAIL: string;
+  };
 }
 
 const loadEnvVars = (): EnvVars => {
@@ -46,6 +68,8 @@ const loadEnvVars = (): EnvVars => {
     "JWT_EXPIRES_IN",
     "JWT_REFRESH_SECRET",
     "JWT_REFRESH_EXPIRES_IN",
+    "JWT_RESET_SECRET",
+    "FORGET_PASSWORD_LIMIT_MIN",
     "BCRYPT_SALT_ROUNDS",
     "SUPER_ADMIN_EMAIL",
     "SUPER_ADMIN_PASSWORD",
@@ -67,6 +91,22 @@ const loadEnvVars = (): EnvVars => {
     "SSL_SUCCEEDED_BACKEND_URL",
     "SSL_FAILED_BACKEND_URL",
     "SSL_CANCELLED_BACKEND_URL",
+    "CLOUDINARY_CLOUD_NAME",
+    "CLOUDINARY_API_KEY",
+    "CLOUDINARY_API_SECRET",
+    "CLOUDINARY_FOLDER_NAME",
+    "CLOUDINARY_MAX_FILE_SIZE",
+    "CLOUDINARY_ALLOWED_FORMATS",
+    "CLOUDINARY_MAX_IMAGE_WIDTH",
+    "CLOUDINARY_MAX_IMAGE_HEIGHT",
+    "CLOUDINARY_IMAGE_QUALITY",
+    "CLOUDINARY_IMAGE_CROP",
+    "CLOUDINARY_IMAGE_GRAVITY",
+    "SMTP_HOST",
+    "SMTP_PORT",
+    "SMTP_USER",
+    "SMTP_PASS",
+    "SMTP_FROM_EMAIL",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -88,6 +128,9 @@ const loadEnvVars = (): EnvVars => {
     JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN as string,
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET as string,
     JWT_REFRESH_EXPIRES_IN: process.env.JWT_REFRESH_EXPIRES_IN as string,
+    JWT_RESET_SECRET: process.env.JWT_RESET_SECRET as string,
+    FORGET_PASSWORD_LIMIT_MIN:
+      Number(process.env.FORGET_PASSWORD_LIMIT_MIN) || 30,
     BCRYPT_SALT_ROUNDS: Number(process.env.BCRYPT_SALT_ROUNDS) || 10,
     SUPER_ADMIN_EMAIL: process.env.SUPER_ADMIN_EMAIL as string,
     SUPER_ADMIN_PASSWORD: process.env.SUPER_ADMIN_PASSWORD as string,
@@ -110,6 +153,28 @@ const loadEnvVars = (): EnvVars => {
       SUCCEEDED_BACKEND_URL: process.env.SSL_SUCCEEDED_BACKEND_URL as string,
       FAILED_BACKEND_URL: process.env.SSL_FAILED_BACKEND_URL as string,
       CANCELLED_BACKEND_URL: process.env.SSL_CANCELLED_BACKEND_URL as string,
+    },
+    CLOUDINARY: {
+      CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME as string,
+      API_KEY: process.env.CLOUDINARY_API_KEY as string,
+      API_SECRET: process.env.CLOUDINARY_API_SECRET as string,
+      FOLDER_NAME: process.env.CLOUDINARY_FOLDER_NAME as string,
+      MAX_FILE_SIZE: Number(process.env.CLOUDINARY_MAX_FILE_SIZE),
+      ALLOWED_FORMATS: (process.env.CLOUDINARY_ALLOWED_FORMATS as string)
+        .split(",")
+        .map((f) => f.trim()),
+      MAX_IMAGE_WIDTH: Number(process.env.CLOUDINARY_MAX_IMAGE_WIDTH),
+      MAX_IMAGE_HEIGHT: Number(process.env.CLOUDINARY_MAX_IMAGE_HEIGHT),
+      IMAGE_QUALITY: Number(process.env.CLOUDINARY_IMAGE_QUALITY),
+      IMAGE_CROP: process.env.CLOUDINARY_IMAGE_CROP as string,
+      IMAGE_GRAVITY: process.env.CLOUDINARY_IMAGE_GRAVITY as string,
+    },
+    EMAIL_SENDER: {
+      SMTP_HOST: process.env.SMTP_HOST as string,
+      SMTP_PORT: Number(process.env.SMTP_PORT),
+      SMTP_USER: process.env.SMTP_USER as string,
+      SMTP_PASS: process.env.SMTP_PASS as string,
+      SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL as string,
     },
   };
 };

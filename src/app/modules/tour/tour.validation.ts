@@ -99,4 +99,6 @@ export const createTourZodSchema = z
   })
   .strict();
 
-export const updateTourZodSchema = createTourZodSchema.partial();
+export const updateTourZodSchema = createTourZodSchema.partial().extend({
+  deletedImages: z.array(z.string()).optional(),
+});
