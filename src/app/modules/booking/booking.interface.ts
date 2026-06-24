@@ -15,6 +15,8 @@ export interface IBooking {
   notes?: string;
   payment?: Types.ObjectId;
   bookingStatus: BookingStatus;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type IBookingCreate = Omit<
