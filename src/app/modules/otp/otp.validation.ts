@@ -13,6 +13,8 @@ export const verifyOTPZodSchema = z
     email: z.email({
       error: "Invalid email format",
     }),
-    otp: z.string().regex(/^[0-9]+$/),
+    otp: z.string().regex(/^[0-9]+$/, {
+      error: "OTP must contain only digits",
+    }),
   })
   .strict();
