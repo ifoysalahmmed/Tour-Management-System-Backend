@@ -1,0 +1,9 @@
+export const BLUE = "#1a73e8";
+export const DARK = "#1a1a1a";
+export const GREY = "#888888";
+export const MID_GREY = "#555555";
+export const ROW_DIVIDER = "#eef1f8";
+export const CARD_BG = "#f8faff";
+export const CARD_BORDER = "#dde8ff";
+export const TOTAL_ROW_BG = "#eef4ff";
+export const FOOTER_BG = "#f4f6f9";
