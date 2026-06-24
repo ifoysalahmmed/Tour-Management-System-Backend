@@ -1,6 +1,9 @@
 import status from "http-status";
 
+import type { IInvoiceData } from "../../helpers/invoice/types.js";
 import { AppError } from "../../errors/app.error.js";
+import { generateInvoicePDF } from "../../utils/invoice.js";
+import { sendEmail } from "../../utils/sendEmail.js";
 import { BookingStatus } from "../booking/booking.interface.js";
 import { BookingModel } from "../booking/booking.model.js";
 import { SSLCommerzServices } from "../sslCommerz/sslCommerz.service.js";
@@ -77,14 +80,48 @@ const paymentSucceeded = async (query: Record<string, string>) => {
       );
     }
 
-    await BookingModel.findByIdAndUpdate(
+    const updatedBooking = await BookingModel.findByIdAndUpdate(
       payment.booking,
       { bookingStatus: BookingStatus.Confirmed },
       {
         runValidators: true,
         session,
+        returnDocument: "after",
       },
-    );
+    )
+      .populate<{ user: { name: string; email: string } }>("user", "name email")
+      .populate<{ tour: { title: string } }>("tour", "title")
+      .lean();
+
+    if (!updatedBooking) {
+      throw new AppError(status.NOT_FOUND, "Booking not found");
+    }
+
+    const invoiceData: IInvoiceData = {
+      transactionId: payment.transactionId,
+      bookingDate: updatedBooking.createdAt,
+      username: updatedBooking.user.name,
+      tourTitle: updatedBooking.tour.title,
+      guestCount: updatedBooking.guestCount,
+      totalAmount: payment.amount,
+    };
+
+    const pdfBuffer = await generateInvoicePDF(invoiceData);
+
+    await sendEmail({
+      to: updatedBooking.user.email,
+      subject: "Booking Invoice",
+      text: `Dear ${updatedBooking.user.name},\n\nThank you for your booking. Please find your invoice attached.\n\nBest regards,\nTour Management Team`,
+      template: "invoice",
+      templateData: invoiceData,
+      attachments: [
+        {
+          filename: "invoice.pdf",
+          content: pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ],
+    });
 
     await session.commitTransaction();
     return {
