@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Invoice</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background-color: #f4f6f9;
+        color: #333333;
+        line-height: 1.6;
+      }
+
+      .email-wrapper {
+        max-width: 600px;
+        margin: 40px auto;
+        background-color: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      }
+
+      .email-header {
+        background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+        padding: 40px 32px;
+        text-align: center;
+      }
+
+      .email-header h1 {
+        color: #ffffff;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+      }
+
+      .email-header p {
+        color: rgba(255, 255, 255, 0.85);
+        font-size: 14px;
+        margin-top: 6px;
+      }
+
+      .badge {
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 4px 14px;
+        border-radius: 20px;
+        margin-top: 14px;
+      }
+
+      .email-body {
+        padding: 40px 32px;
+      }
+
+      .greeting {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 12px;
+      }
+
+      .message {
+        font-size: 15px;
+        color: #555555;
+        margin-bottom: 28px;
+      }
+
+      .summary-card {
+        background-color: #f8faff;
+        border: 1px solid #dde8ff;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-bottom: 28px;
+      }
+
+      .summary-card-header {
+        background-color: #1a73e8;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 10px 20px;
+      }
+
+      .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      .summary-table tr {
+        border-bottom: 1px solid #eef1f8;
+      }
+
+      .summary-table tr:last-child {
+        border-bottom: none;
+      }
+
+      .summary-table td {
+        padding: 13px 20px;
+        font-size: 14px;
+      }
+
+      .summary-table td:first-child {
+        color: #888888;
+        font-weight: 500;
+        width: 45%;
+      }
+
+      .summary-table td:last-child {
+        color: #1a1a1a;
+        font-weight: 600;
+      }
+
+      .total-row td {
+        background-color: #eef4ff;
+      }
+
+      .total-row td:last-child {
+        color: #1a73e8;
+        font-size: 16px;
+      }
+
+      .attachment-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        background-color: #e8f5e9;
+        border-left: 4px solid #43a047;
+        border-radius: 6px;
+        padding: 14px 18px;
+        margin-bottom: 28px;
+      }
+
+      .attachment-icon {
+        font-size: 22px;
+        line-height: 1;
+        flex-shrink: 0;
+      }
+
+      .attachment-notice p {
+        font-size: 13px;
+        color: #2e7d32;
+      }
+
+      .attachment-notice strong {
+        display: block;
+        font-size: 14px;
+        margin-bottom: 2px;
+      }
+
+      .divider {
+        border: none;
+        border-top: 1px solid #eeeeee;
+        margin: 28px 0;
+      }
+
+      .closing-note {
+        font-size: 13px;
+        color: #888888;
+      }
+
+      .email-footer {
+        background-color: #f4f6f9;
+        padding: 24px 32px;
+        text-align: center;
+      }
+
+      .email-footer p {
+        font-size: 12px;
+        color: #999999;
+        margin-bottom: 4px;
+      }
+
+      .email-footer a {
+        color: #1a73e8;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-wrapper">
+      <div class="email-header">
+        <h1>Tour Management System</h1>
+        <p>Payment Confirmation &amp; Invoice</p>
+        <span class="badge">Booking Confirmed</span>
+      </div>
+
+      <div class="email-body">
+        <p class="greeting">Hello, <%= username %></p>
+
+        <p class="message">
+          Great news! Your payment was successful and your booking is confirmed.
+          Here is a summary of your reservation. A detailed PDF invoice is
+          attached to this email for your records.
+        </p>
+
+        <div class="attachment-notice">
+          <span class="attachment-icon">&#128206;</span>
+          <div>
+            <strong>Invoice Attached</strong>
+            <p>
+              Your full invoice (invoice.pdf) is attached to this email. Please
+              keep it for your records.
+            </p>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <p class="closing-note">
+          If you have any questions about your booking, please don't hesitate to
+          reach out to our support team. We look forward to providing you with
+          an unforgettable tour experience!
+        </p>
+      </div>
+
+      <div class="email-footer">
+        <p>
+          &copy; <%= new Date().getFullYear() %> Tour Management System. All
+          rights reserved.
+        </p>
+        <p>
+          Need help?
+          <a href="mailto:support@tourmanagement.com">Contact Support</a>
+        </p>
+      </div>
+    </div>
+  </body>
+</html>
