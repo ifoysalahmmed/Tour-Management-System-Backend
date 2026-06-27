@@ -18,4 +18,10 @@ router.post("/failed", PaymentControllers.paymentFailed);
 
 router.post("/cancelled", PaymentControllers.paymentCancelled);
 
+router.get(
+  "/invoice/:paymentId",
+  checkAuth(...Object.values(UserRole)),
+  PaymentControllers.getInvoiceDownloadUrl,
+);
+
 export const PaymentRoutes = router;

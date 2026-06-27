@@ -1,14 +1,20 @@
 import status from "http-status";
+import type { Types } from "mongoose";
 
 import type { IInvoiceData } from "../../helpers/invoice/types.js";
 import { AppError } from "../../errors/app.error.js";
+import { uploadToCloudinary } from "../../helpers/cloudinary/index.js";
 import { generateInvoicePDF } from "../../utils/invoice.js";
 import { sendEmail } from "../../utils/sendEmail.js";
 import { BookingStatus } from "../booking/booking.interface.js";
 import { BookingModel } from "../booking/booking.model.js";
 import { SSLCommerzServices } from "../sslCommerz/sslCommerz.service.js";
 import { UserModel } from "../user/user.model.js";
-import { PaymentStatus } from "./payment.interface.js";
+import {
+  CurrencyList,
+  PaymentStatus,
+  type IPayment,
+} from "./payment.interface.js";
 import { PaymentModel } from "./payment.model.js";
 
 const initiatePayment = async (bookingId: string, userId: string) => {
@@ -59,35 +65,90 @@ const initiatePayment = async (bookingId: string, userId: string) => {
   }
 };
 
-const paymentSucceeded = async (query: Record<string, string>) => {
-  const session = await BookingModel.startSession();
-  session.startTransaction();
+const paymentSucceeded = async (
+  query: Record<string, string>,
+  gatewayData: Record<string, string>,
+) => {
+  const preCheck = await PaymentModel.findOne({
+    transactionId: query.transactionId as string,
+  })
+    .select("status amount currency")
+    .lean();
 
-  try {
-    const payment = await PaymentModel.findOneAndUpdate(
-      { transactionId: query.transactionId as string },
-      { status: PaymentStatus.Paid },
-      {
-        runValidators: true,
-        session,
-      },
+  if (!preCheck) {
+    throw new AppError(
+      status.NOT_FOUND,
+      "Payment record not found for the given transaction ID",
     );
+  }
+
+  if (preCheck.status === PaymentStatus.Paid) {
+    return {
+      message: "Payment already processed",
+      amount: preCheck.amount,
+      currency: preCheck.currency,
+    };
+  }
+
+  if (preCheck.status !== PaymentStatus.Unpaid) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Payment cannot be confirmed: current status is ${preCheck.status}`,
+    );
+  }
+
+  let paymentId!: Types.ObjectId;
+  let transactionId!: string;
+  let amount!: number;
+  let currency!: CurrencyList;
+  let userEmail!: string;
+  let userName!: string;
+  let invoiceData!: IInvoiceData;
+
+  const session = await BookingModel.startSession();
+  try {
+    session.startTransaction();
+
+    const paymentUpdate: Partial<IPayment> = {
+      status: PaymentStatus.Paid,
+      paymentMethod: gatewayData.card_type || "N/A",
+      paymentGateway: {
+        val_id: gatewayData.val_id ?? null,
+        bank_tran_id: gatewayData.bank_tran_id ?? null,
+        amount: gatewayData.amount ?? null,
+        currency: gatewayData.currency ?? null,
+        card_issuer: gatewayData.card_issuer ?? null,
+        card_brand: gatewayData.card_brand ?? null,
+        risk_level: gatewayData.risk_level ?? null,
+        risk_title: gatewayData.risk_title ?? null,
+      },
+    };
+
+    const payment = await PaymentModel.findOneAndUpdate(
+      {
+        transactionId: query.transactionId as string,
+        status: PaymentStatus.Unpaid,
+      },
+      paymentUpdate,
+      { runValidators: true, session },
+    ).lean();
 
     if (!payment) {
       throw new AppError(
-        status.BAD_REQUEST,
-        "Payment record not found for the given transaction ID",
+        status.CONFLICT,
+        "Payment status changed concurrently — duplicate webhook or race condition",
       );
     }
+
+    paymentId = payment._id as Types.ObjectId;
+    transactionId = payment.transactionId;
+    amount = payment.amount;
+    currency = payment.currency;
 
     const updatedBooking = await BookingModel.findByIdAndUpdate(
       payment.booking,
       { bookingStatus: BookingStatus.Confirmed },
-      {
-        runValidators: true,
-        session,
-        returnDocument: "after",
-      },
+      { runValidators: true, session, returnDocument: "after" },
     )
       .populate<{ user: { name: string; email: string } }>("user", "name email")
       .populate<{ tour: { title: string } }>("tour", "title")
@@ -97,7 +158,10 @@ const paymentSucceeded = async (query: Record<string, string>) => {
       throw new AppError(status.NOT_FOUND, "Booking not found");
     }
 
-    const invoiceData: IInvoiceData = {
+    userEmail = updatedBooking.user.email;
+    userName = updatedBooking.user.name;
+
+    invoiceData = {
       transactionId: payment.transactionId,
       bookingDate: updatedBooking.createdAt,
       username: updatedBooking.user.name,
@@ -106,12 +170,31 @@ const paymentSucceeded = async (query: Record<string, string>) => {
       totalAmount: payment.amount,
     };
 
+    await session.commitTransaction();
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    await session.endSession();
+  }
+
+  try {
     const pdfBuffer = await generateInvoicePDF(invoiceData);
 
+    const invoiceUrl = await uploadToCloudinary(pdfBuffer, {
+      filename: `invoice-${transactionId}.pdf`,
+      resourceType: "raw",
+    });
+
+    await PaymentModel.findByIdAndUpdate(paymentId, {
+      invoiceUrl,
+      paidAt: new Date(),
+    });
+
     await sendEmail({
-      to: updatedBooking.user.email,
+      to: userEmail,
       subject: "Booking Invoice",
-      text: `Dear ${updatedBooking.user.name},\n\nThank you for your booking. Please find your invoice attached.\n\nBest regards,\nTour Management Team`,
+      text: `Dear ${userName},\n\nThank you for your booking. Please find your invoice attached.\n\nBest regards,\nTour Management Team`,
       template: "invoice",
       templateData: invoiceData,
       attachments: [
@@ -122,19 +205,15 @@ const paymentSucceeded = async (query: Record<string, string>) => {
         },
       ],
     });
-
-    await session.commitTransaction();
-    return {
-      message: "Payment completed successfully and booking confirmed",
-      amount: payment.amount,
-      currency: payment.currency,
-    };
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    await session.endSession();
+  } catch (invoiceError) {
+    console.error("Post-payment invoice/email delivery failed:", invoiceError);
   }
+
+  return {
+    message: "Payment completed successfully and booking confirmed",
+    amount,
+    currency,
+  };
 };
 
 const paymentFailed = async (query: Record<string, string>) => {
@@ -223,9 +302,45 @@ const paymentCancelled = async (query: Record<string, string>) => {
   }
 };
 
+const getInvoiceDownloadUrl = async (paymentId: string, userId: string) => {
+  const payment = await PaymentModel.findById(paymentId)
+    .select("invoiceUrl booking")
+    .populate<{ booking: { user: Types.ObjectId } }>("booking", "user");
+
+  if (!payment) {
+    throw new AppError(
+      status.NOT_FOUND,
+      "Payment record not found for the given payment ID",
+    );
+  }
+
+  if (!payment.booking) {
+    throw new AppError(status.NOT_FOUND, "Booking not found for this payment");
+  }
+
+  if (payment.booking.user.toString() !== userId) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "You are not authorized to access this invoice",
+    );
+  }
+
+  if (!payment.invoiceUrl) {
+    throw new AppError(
+      status.NOT_FOUND,
+      "Invoice not generated for this payment yet",
+    );
+  }
+
+  return {
+    downloadUrl: payment.invoiceUrl,
+  };
+};
+
 export const PaymentServices = {
   initiatePayment,
   paymentSucceeded,
   paymentFailed,
   paymentCancelled,
+  getInvoiceDownloadUrl,
 };
