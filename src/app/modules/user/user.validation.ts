@@ -70,4 +70,6 @@ export const createUserZodSchema = z
   })
   .strict();
 
-export const updateUserZodSchema = createUserZodSchema.partial();
+export const updateUserZodSchema = createUserZodSchema
+  .omit({ password: true })
+  .partial();
