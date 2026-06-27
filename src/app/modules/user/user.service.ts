@@ -59,8 +59,8 @@ const getAllUsersFromDB = async (query: Record<string, string>) => {
   };
 };
 
-const getUserByEmailFromDB = async (email: string) => {
-  const user = await UserModel.findOne({ email });
+const getUserByIdFromDB = async (id: string) => {
+  const user = await UserModel.findById(id);
 
   if (!user) {
     throw new AppError(status.NOT_FOUND, "User not found");
@@ -74,10 +74,32 @@ const updateUserIntoDB = async (
   payload: Partial<IUser>,
   decodedToken: JwtPayload,
 ) => {
+  if (
+    decodedToken.role === UserRole.User ||
+    decodedToken.role === UserRole.Guide
+  ) {
+    if (userId !== decodedToken.id) {
+      throw new AppError(
+        status.FORBIDDEN,
+        "Not authorized to update this user",
+      );
+    }
+  }
+
   const targetUser = await UserModel.findById(userId);
 
   if (!targetUser) {
     throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  if (
+    decodedToken.role === UserRole.Admin &&
+    targetUser.role === UserRole.SuperAdmin
+  ) {
+    throw new AppError(
+      status.FORBIDDEN,
+      "Admin cannot modify a super admin's account",
+    );
   }
 
   if (targetUser.isActive === UserStatus.Blocked) {
@@ -120,13 +142,6 @@ const updateUserIntoDB = async (
           "Admin can only assign user or guide roles",
         );
       }
-
-      if (targetUser.role === UserRole.SuperAdmin) {
-        throw new AppError(
-          status.FORBIDDEN,
-          "Admin cannot modify a super admin's account",
-        );
-      }
     }
   }
 
@@ -139,16 +154,6 @@ const updateUserIntoDB = async (
       throw new AppError(
         status.FORBIDDEN,
         "Not authorized to update user status",
-      );
-    }
-
-    if (
-      requesterRole === UserRole.Admin &&
-      targetUser.role === UserRole.SuperAdmin
-    ) {
-      throw new AppError(
-        status.FORBIDDEN,
-        "Admin cannot modify a super admin's account",
       );
     }
   }
@@ -175,6 +180,6 @@ const updateUserIntoDB = async (
 export const UserServices = {
   createUserIntoDB,
   getAllUsersFromDB,
-  getUserByEmailFromDB,
+  getUserByIdFromDB,
   updateUserIntoDB,
 };
