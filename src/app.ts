@@ -40,6 +40,7 @@ app.use(
 app.use(
   cors({
     origin: envVars.ALLOWED_ORIGINS,
+    credentials: true,
   }),
 );
 
