@@ -5,6 +5,7 @@ import { BookingRoutes } from "../modules/booking/booking.route.js";
 import { DivisionRoutes } from "../modules/division/division.route.js";
 import { OTPRoutes } from "../modules/otp/otp.route.js";
 import { PaymentRoutes } from "../modules/payment/payment.route.js";
+import { StatsRoutes } from "../modules/stats/stats.route.js";
 import { TourTypeRoutes } from "../modules/tour-type/tourType.route.js";
 import { TourRoutes } from "../modules/tour/tour.route.js";
 import { UserRoutes } from "../modules/user/user.route.js";
@@ -31,6 +32,10 @@ const moduleRoutes = [
   {
     path: "/payment",
     route: PaymentRoutes,
+  },
+  {
+    path: "/stats",
+    route: StatsRoutes,
   },
   {
     path: "/tour-types",
