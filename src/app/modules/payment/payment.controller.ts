@@ -71,10 +71,24 @@ const getInvoiceDownloadUrl = catchAsync(async (req, res) => {
   });
 });
 
+const validatePayment = catchAsync(async (req, res) => {
+  const result = await PaymentServices.validatePayment(
+    req.body as Record<string, string>,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
 export const PaymentControllers = {
   initiatePayment,
   paymentSucceeded,
   paymentFailed,
   paymentCancelled,
   getInvoiceDownloadUrl,
+  validatePayment,
 };
