@@ -15,6 +15,15 @@ export const createPaymentZodSchema = z
   })
   .strict();
 
+export const validateIPNZodSchema = z.looseObject({
+  tran_id: z.string({
+    error: "Transaction ID is required",
+  }),
+  val_id: z.string({
+    error: "Validation ID is required",
+  }),
+});
+
 export const updatePaymentZodSchema = z
   .object({
     transactionId: z
