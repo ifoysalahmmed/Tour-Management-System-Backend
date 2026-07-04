@@ -1,17 +1,135 @@
-import { UserStatus } from "../user/user.interface.js";
+import { BookingModel } from "../booking/booking.model.js";
+import { TourModel } from "../tour/tour.model.js";
+import { UserStatus, type IUser } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
 
-const today = new Date();
-const sevenDaysAgo = new Date(today).setDate(today.getDate() - 7);
-const thirtyDaysAgo = new Date(today).setDate(today.getDate() - 30);
+const getDaysAgo = (days: number) => {
+  const now = new Date();
+  return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
+};
 
 const getBookingStatsFromDB = async () => {};
 
 const getPaymentStatsFromDB = async () => {};
 
-const getTourStatsFromDB = async () => {};
+const getTourStatsFromDB = async () => {
+  const [
+    totalTours,
+    totalToursByTourType,
+    avgStartingCost,
+    totalToursByDivision,
+    mostBookedTours,
+  ] = await Promise.all([
+    TourModel.countDocuments(),
+    TourModel.aggregate([
+      {
+        $group: {
+          _id: "$tourType",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "tourtypes",
+          localField: "_id",
+          foreignField: "_id",
+          as: "type",
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
+      { $unwind: "$type" },
+      { $sort: { "type.name": 1 } },
+      {
+        $project: {
+          _id: 1,
+          name: "$type.name",
+          count: 1,
+        },
+      },
+    ]),
+    TourModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          avgStartingCost: { $avg: "$costFrom" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          avgStartingCost: {
+            $toDouble: { $round: [{ $toDecimal: "$avgStartingCost" }, 2] },
+          },
+        },
+      },
+    ]),
+    TourModel.aggregate([
+      {
+        $group: {
+          _id: "$division",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "divisions",
+          localField: "_id",
+          foreignField: "_id",
+          as: "type",
+          pipeline: [{ $project: { name: 1 } }],
+        },
+      },
+      { $unwind: "$type" },
+      { $sort: { "type.name": 1 } },
+      {
+        $project: {
+          _id: 1,
+          name: "$type.name",
+          count: 1,
+        },
+      },
+    ]),
+    BookingModel.aggregate([
+      {
+        $group: {
+          _id: "$tour",
+          bookingCount: { $sum: 1 },
+        },
+      },
+      { $sort: { bookingCount: -1 } },
+      { $limit: 5 },
+      {
+        $lookup: {
+          from: "tours",
+          localField: "_id",
+          foreignField: "_id",
+          as: "tour",
+          pipeline: [{ $project: { title: 1 } }],
+        },
+      },
+      { $unwind: "$tour" },
+      {
+        $project: {
+          title: "$tour.title",
+          bookingCount: 1,
+        },
+      },
+    ]),
+  ]);
+
+  return {
+    totalTours,
+    totalToursByTourType,
+    avgStartingCost: avgStartingCost[0]?.avgStartingCost ?? 0,
+    totalToursByDivision,
+    mostBookedTours,
+  };
+};
 
 const getUserStatsFromDB = async () => {
+  const sevenDaysAgo = getDaysAgo(7);
+  const thirtyDaysAgo = getDaysAgo(30);
+
   const [
     totalUsers,
     totalActiveUsers,
@@ -35,9 +153,7 @@ const getUserStatsFromDB = async () => {
       {
         $group: {
           _id: "$role",
-          count: {
-            $sum: 1,
-          },
+          count: { $sum: 1 },
         },
       },
     ]),
