@@ -16,6 +16,7 @@ import {
   type IPayment,
 } from "./payment.interface.js";
 import { PaymentModel } from "./payment.model.js";
+import { PaymentUtils } from "./payment.utils.js";
 
 const initiatePayment = async (bookingId: string, userId: string) => {
   const [payment, user] = await Promise.all([
@@ -112,16 +113,7 @@ const paymentSucceeded = async (
     const paymentUpdate: Partial<IPayment> = {
       status: PaymentStatus.Paid,
       paymentMethod: gatewayData.card_type || "N/A",
-      paymentGateway: {
-        val_id: gatewayData.val_id ?? null,
-        bank_tran_id: gatewayData.bank_tran_id ?? null,
-        amount: gatewayData.amount ?? null,
-        currency: gatewayData.currency ?? null,
-        card_issuer: gatewayData.card_issuer ?? null,
-        card_brand: gatewayData.card_brand ?? null,
-        risk_level: gatewayData.risk_level ?? null,
-        risk_title: gatewayData.risk_title ?? null,
-      },
+      paymentGateway: PaymentUtils.mapGatewayData(gatewayData),
     };
 
     const payment = await PaymentModel.findOneAndUpdate(
