@@ -4,7 +4,7 @@ import catchAsync from "../../utils/catchAsync.js";
 import sendResponse from "../../utils/sendResponse.js";
 import { StatsServices } from "./stats.service.js";
 
-const getBookingStats = catchAsync(async (req, res) => {
+const getBookingStats = catchAsync(async (_req, res) => {
   const result = await StatsServices.getBookingStatsFromDB();
 
   sendResponse(res, {
@@ -15,7 +15,7 @@ const getBookingStats = catchAsync(async (req, res) => {
   });
 });
 
-const getPaymentStats = catchAsync(async (req, res) => {
+const getPaymentStats = catchAsync(async (_req, res) => {
   const result = await StatsServices.getPaymentStatsFromDB();
 
   sendResponse(res, {
@@ -26,7 +26,7 @@ const getPaymentStats = catchAsync(async (req, res) => {
   });
 });
 
-const getTourStats = catchAsync(async (req, res) => {
+const getTourStats = catchAsync(async (_req, res) => {
   const result = await StatsServices.getTourStatsFromDB();
 
   sendResponse(res, {
@@ -37,7 +37,7 @@ const getTourStats = catchAsync(async (req, res) => {
   });
 });
 
-const getUserStats = catchAsync(async (req, res) => {
+const getUserStats = catchAsync(async (_req, res) => {
   const result = await StatsServices.getUserStatsFromDB();
 
   sendResponse(res, {
