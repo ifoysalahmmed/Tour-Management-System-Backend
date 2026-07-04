@@ -1,6 +1,6 @@
 import { BookingModel } from "../booking/booking.model.js";
 import { TourModel } from "../tour/tour.model.js";
-import { UserStatus, type IUser } from "../user/user.interface.js";
+import { UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
 
 const getDaysAgo = (days: number) => {
@@ -8,7 +8,87 @@ const getDaysAgo = (days: number) => {
   return new Date(now.getTime() - days * 24 * 60 * 60 * 1000);
 };
 
-const getBookingStatsFromDB = async () => {};
+const getBookingStatsFromDB = async () => {
+  const sevenDaysAgo = getDaysAgo(7);
+  const thirtyDaysAgo = getDaysAgo(30);
+
+  const [
+    totalBookings,
+    totalBookingsByStatus,
+    bookingsByPerTour,
+    avgGuestCount,
+    newBookingsInLastSevenDays,
+    newBookingsInLastThirtyDays,
+    uniqueUsersWithBookings,
+  ] = await Promise.all([
+    BookingModel.countDocuments(),
+    BookingModel.aggregate([
+      {
+        $group: {
+          _id: "$bookingStatus",
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+    BookingModel.aggregate([
+      {
+        $group: {
+          _id: "$tour",
+          bookingCount: { $sum: 1 },
+        },
+      },
+      { $sort: { bookingCount: -1 } },
+      { $limit: 10 },
+      {
+        $lookup: {
+          from: "tours",
+          localField: "_id",
+          foreignField: "_id",
+          as: "tour",
+          pipeline: [{ $project: { title: 1 } }],
+        },
+      },
+      { $unwind: "$tour" },
+      {
+        $project: {
+          title: "$tour.title",
+          bookingCount: 1,
+        },
+      },
+    ]),
+    BookingModel.aggregate([
+      {
+        $group: {
+          _id: null,
+          avgGuestCount: { $avg: "$guestCount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          avgGuestCount: { $ceil: "$avgGuestCount" },
+        },
+      },
+    ]),
+    BookingModel.countDocuments({
+      createdAt: { $gte: sevenDaysAgo },
+    }),
+    BookingModel.countDocuments({
+      createdAt: { $gte: thirtyDaysAgo },
+    }),
+    BookingModel.distinct("user"),
+  ]);
+
+  return {
+    totalBookings,
+    totalBookingsByStatus,
+    bookingsByPerTour,
+    avgGuestCount: avgGuestCount[0]?.avgGuestCount ?? 0,
+    newBookingsInLastSevenDays,
+    newBookingsInLastThirtyDays,
+    totalUniqueUsersWithBookings: uniqueUsersWithBookings.length,
+  };
+};
 
 const getPaymentStatsFromDB = async () => {};
 
