@@ -1,4 +1,6 @@
 import { BookingModel } from "../booking/booking.model.js";
+import { PaymentStatus } from "../payment/payment.interface.js";
+import { PaymentModel } from "../payment/payment.model.js";
 import { TourModel } from "../tour/tour.model.js";
 import { UserStatus } from "../user/user.interface.js";
 import { UserModel } from "../user/user.model.js";
@@ -90,7 +92,77 @@ const getBookingStatsFromDB = async () => {
   };
 };
 
-const getPaymentStatsFromDB = async () => {};
+const getPaymentStatsFromDB = async () => {
+  const [
+    totalPayments,
+    totalPaymentsByStatus,
+    totalPaidPayments,
+    totalPaidAmount,
+    avgPaidAmount,
+    totalPaymentsByGatewayStatus,
+  ] = await Promise.all([
+    PaymentModel.countDocuments(),
+    PaymentModel.aggregate([
+      {
+        $group: {
+          _id: "$status",
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+    PaymentModel.countDocuments({ status: PaymentStatus.Paid }),
+    PaymentModel.aggregate([
+      {
+        $match: { status: PaymentStatus.Paid },
+      },
+      {
+        $group: {
+          _id: null,
+          amount: { $sum: "$amount" },
+        },
+      },
+    ]),
+    PaymentModel.aggregate([
+      {
+        $match: { status: PaymentStatus.Paid },
+      },
+      {
+        $group: {
+          _id: null,
+          amount: { $avg: "$amount" },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          amount: {
+            $toDouble: { $round: [{ $toDecimal: "$amount" }, 2] },
+          },
+        },
+      },
+    ]),
+    PaymentModel.aggregate([
+      {
+        $match: { status: PaymentStatus.Paid },
+      },
+      {
+        $group: {
+          _id: { $ifNull: ["$paymentGateway.status", "UNKNOWN"] },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+  ]);
+
+  return {
+    totalPayments,
+    totalPaymentsByStatus,
+    totalPaidPayments,
+    totalPaidAmount: totalPaidAmount[0]?.amount ?? 0,
+    avgPaidAmount: avgPaidAmount[0]?.amount ?? 0,
+    totalPaymentsByGatewayStatus,
+  };
+};
 
 const getTourStatsFromDB = async () => {
   const [
