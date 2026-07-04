@@ -66,13 +66,11 @@ const initiatePayment = async (bookingId: string, userId: string) => {
   }
 };
 
-const paymentSucceeded = async (
-  query: Record<string, string>,
+const confirmPayment = async (
+  transactionId: string,
   gatewayData: Record<string, string>,
 ) => {
-  const preCheck = await PaymentModel.findOne({
-    transactionId: query.transactionId as string,
-  })
+  const preCheck = await PaymentModel.findOne({ transactionId })
     .select("status amount currency")
     .lean();
 
@@ -98,8 +96,20 @@ const paymentSucceeded = async (
     );
   }
 
+  const gatewayAmount = Number(gatewayData.amount);
+
+  if (
+    gatewayData.currency !== preCheck.currency ||
+    Number.isNaN(gatewayAmount) ||
+    Math.abs(gatewayAmount - preCheck.amount) > 0.01
+  ) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      "Payment amount or currency does not match the stored record",
+    );
+  }
+
   let paymentId!: Types.ObjectId;
-  let transactionId!: string;
   let amount!: number;
   let currency!: CurrencyList;
   let userEmail!: string;
@@ -118,7 +128,7 @@ const paymentSucceeded = async (
 
     const payment = await PaymentModel.findOneAndUpdate(
       {
-        transactionId: query.transactionId as string,
+        transactionId,
         status: PaymentStatus.Unpaid,
       },
       paymentUpdate,
@@ -133,7 +143,6 @@ const paymentSucceeded = async (
     }
 
     paymentId = payment._id as Types.ObjectId;
-    transactionId = payment.transactionId;
     amount = payment.amount;
     currency = payment.currency;
 
@@ -206,6 +215,19 @@ const paymentSucceeded = async (
     amount,
     currency,
   };
+};
+
+const paymentSucceeded = async (
+  query: Record<string, string>,
+  gatewayData: Record<string, string>,
+) => {
+  return confirmPayment(query.transactionId as string, gatewayData);
+};
+
+const validatePayment = async (payload: Record<string, string>) => {
+  const gatewayData = await SSLCommerzServices.validatePayment(payload);
+
+  return confirmPayment(gatewayData.tran_id as string, gatewayData);
 };
 
 const paymentFailed = async (query: Record<string, string>) => {
@@ -335,4 +357,5 @@ export const PaymentServices = {
   paymentFailed,
   paymentCancelled,
   getInvoiceDownloadUrl,
+  validatePayment,
 };
