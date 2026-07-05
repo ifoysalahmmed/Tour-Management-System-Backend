@@ -36,10 +36,11 @@ export class QueryBuilder<T> {
   }
 
   filter(): this {
-    const filters = { ...this.queryString };
-    excludedFields.forEach((field) => {
-      delete filters[field];
-    });
+    const filters = Object.fromEntries(
+      Object.entries(this.queryString).filter(
+        ([field]) => !excludedFields.includes(field),
+      ),
+    );
 
     this.modelQuery = this.modelQuery.find(filters);
     return this;
