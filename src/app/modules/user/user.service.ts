@@ -110,7 +110,7 @@ const updateUserIntoDB = async (
     throw new AppError(status.FORBIDDEN, "Cannot update a deleted user");
   }
 
-  const { email, auths, ...safePayload } = payload;
+  const { email: _email, auths: _auths, ...safePayload } = payload;
 
   if (safePayload.password) {
     safePayload.password = await bcrypt.hash(

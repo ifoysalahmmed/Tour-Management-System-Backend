@@ -27,7 +27,7 @@ export const createUserZodSchema = z
       .regex(/[A-Z]/, {
         message: "Password must contain at least one uppercase letter",
       })
-      .regex(/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/, {
+      .regex(/[!@#$%^&*()_+\-={}[\];':"\\|,.<>/?]/, {
         message: "Password must contain at least one special character",
       })
       .regex(/\d/, {
