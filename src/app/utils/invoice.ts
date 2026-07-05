@@ -34,9 +34,8 @@ export const generateInvoicePDF = async (
 
     const headerBottom = drawHeader(doc, pageWidth, contentWidth, margin);
 
-    let y = headerBottom + 30;
-    y = drawSummaryCard(doc, invoiceData, margin, contentWidth, y);
-    y += 18;
+    const y = headerBottom + 30;
+    drawSummaryCard(doc, invoiceData, margin, contentWidth, y);
     drawFooter(doc, pageWidth, pageHeight, contentWidth, margin);
 
     doc.end();
