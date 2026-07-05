@@ -7,10 +7,12 @@ interface AuthTokens {
   refreshToken?: string;
 }
 
+const isProduction = envVars.NODE_ENV === "production";
+
 export const cookieOptions = {
   httpOnly: true,
-  secure: envVars.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  secure: isProduction,
+  sameSite: isProduction ? ("none" as const) : ("lax" as const),
 };
 
 const setCookies = (res: Response, tokens: AuthTokens) => {

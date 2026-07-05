@@ -1,5 +1,6 @@
 import status from "http-status";
 import type { JwtPayload } from "jsonwebtoken";
+import type { Types } from "mongoose";
 import passport from "passport";
 
 import { envVars } from "../../config/env.js";
@@ -10,11 +11,18 @@ import setCookies, { cookieOptions } from "../../utils/setCookies.js";
 import { generateAuthTokens } from "../../utils/userAuthTokens.js";
 import type { IUserInput } from "./auth.interface.js";
 import { AuthServices } from "./auth.service.js";
+import type { IUser } from "../user/user.interface.js";
+
+type IAuthenticatedUser = IUser & { _id: Types.ObjectId };
 
 const loginWithCredentials = catchAsync(async (req, res, next) => {
   passport.authenticate(
     "local",
-    async (err: any, user: any, info: { message: string }) => {
+    async (
+      err: Error | null,
+      user: IAuthenticatedUser | false,
+      info: { message: string },
+    ) => {
       if (err) {
         return next(err);
       }

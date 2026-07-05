@@ -12,40 +12,58 @@ const GRAVITY_SUPPORTED_CROPS = new Set([
   "auto_pad",
 ]);
 
-const buildPublicId = (filename: string): string => {
+const FOLDER_MAP: Record<string, string> = {
+  image: "images",
+  video: "videos",
+  raw: "files",
+  auto: "images",
+};
+
+const buildPublicId = (filename: string, keepExtension = false): string => {
   const lastDot = filename.lastIndexOf(".");
+  const ext = lastDot !== -1 ? filename.slice(lastDot) : "";
   const name = lastDot !== -1 ? filename.slice(0, lastDot) : filename;
   const base36 = Math.random().toString(36).slice(2);
 
-  return `${base36}-${Date.now()}-${slugify(name)}`;
+  return `${base36}-${Date.now()}-${slugify(name)}${keepExtension ? ext : ""}`;
 };
 
 export const uploadToCloudinary = (
   buffer: Buffer,
-  options?: { width?: number; height?: number; filename?: string },
+  options?: {
+    width?: number;
+    height?: number;
+    filename?: string;
+    resourceType?: "image" | "video" | "raw" | "auto";
+  },
 ): Promise<string> =>
   new Promise((resolve, reject) => {
     try {
+      const resourceType = options?.resourceType ?? "auto";
+      const isImage = resourceType === "image" || resourceType === "auto";
+
       const crop = envVars.CLOUDINARY.IMAGE_CROP;
       const width = options?.width ?? envVars.CLOUDINARY.MAX_IMAGE_WIDTH;
       const height = options?.height ?? envVars.CLOUDINARY.MAX_IMAGE_HEIGHT;
 
       const stream = cloudinary.uploader.upload_stream(
         {
-          resource_type: "auto",
-          folder: envVars.CLOUDINARY.FOLDER_NAME,
+          resource_type: resourceType,
+          folder: `${envVars.CLOUDINARY.FOLDER_NAME}/${FOLDER_MAP[resourceType]}`,
           ...(options?.filename && {
-            public_id: buildPublicId(options.filename),
+            public_id: buildPublicId(options.filename, resourceType === "raw"),
           }),
-          transformation: {
-            width,
-            height,
-            crop,
-            ...(GRAVITY_SUPPORTED_CROPS.has(crop) && {
-              gravity: envVars.CLOUDINARY.IMAGE_GRAVITY,
-            }),
-            quality: envVars.CLOUDINARY.IMAGE_QUALITY,
-          },
+          ...(isImage && {
+            transformation: {
+              width,
+              height,
+              crop,
+              ...(GRAVITY_SUPPORTED_CROPS.has(crop) && {
+                gravity: envVars.CLOUDINARY.IMAGE_GRAVITY,
+              }),
+              quality: envVars.CLOUDINARY.IMAGE_QUALITY,
+            },
+          }),
         },
         (error, result) => {
           if (error || !result) {

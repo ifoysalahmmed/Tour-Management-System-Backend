@@ -57,12 +57,12 @@ const changePassword = async (
     throw new AppError(status.BAD_REQUEST, "Current password is incorrect");
   }
 
-  user!.password = await bcrypt.hash(
+  user.password = await bcrypt.hash(
     newPassword,
     Number(envVars.BCRYPT_SALT_ROUNDS),
   );
 
-  await user!.save();
+  await user.save();
 };
 
 const forgotPassword = async (email: string) => {

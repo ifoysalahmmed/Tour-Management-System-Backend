@@ -26,7 +26,7 @@ interface SendEmailOptions {
   subject: string;
   text: string;
   template: string;
-  templateData?: Record<string, any>;
+  templateData?: object;
   attachments?: {
     filename: string;
     content: Buffer | string;
@@ -65,11 +65,11 @@ export const sendEmail = async ({
         contentType: attachment.contentType,
       })),
     });
-  } catch (error: any) {
-    console.error("Error sending email:", error.message);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
     throw new AppError(
       status.INTERNAL_SERVER_ERROR,
-      `Failed to send email: ${error.message}`,
+      `Failed to send email: ${message}`,
     );
   }
 };

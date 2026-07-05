@@ -29,6 +29,7 @@ interface EnvVars {
     STORE_PASSWORD: string;
     PAYMENT_URL: string;
     VALIDATION_URL: string;
+    IPN_URL: string;
     SUCCEEDED_FRONTEND_URL: string;
     FAILED_FRONTEND_URL: string;
     CANCELLED_FRONTEND_URL: string;
@@ -55,6 +56,12 @@ interface EnvVars {
     SMTP_USER: string;
     SMTP_PASS: string;
     SMTP_FROM_EMAIL: string;
+  };
+  REDIS: {
+    USERNAME: string;
+    PASSWORD: string;
+    HOST: string;
+    PORT: number;
   };
 }
 
@@ -85,6 +92,7 @@ const loadEnvVars = (): EnvVars => {
     "SSL_STORE_PASSWORD",
     "SSL_PAYMENT_URL",
     "SSL_VALIDATION_URL",
+    "SSL_IPN_URL",
     "SSL_SUCCEEDED_FRONTEND_URL",
     "SSL_FAILED_FRONTEND_URL",
     "SSL_CANCELLED_FRONTEND_URL",
@@ -107,6 +115,10 @@ const loadEnvVars = (): EnvVars => {
     "SMTP_USER",
     "SMTP_PASS",
     "SMTP_FROM_EMAIL",
+    "REDIS_USERNAME",
+    "REDIS_PASSWORD",
+    "REDIS_HOST",
+    "REDIS_PORT",
   ];
 
   const missingVars = requiredVars.filter((key) => !process.env[key]);
@@ -147,6 +159,7 @@ const loadEnvVars = (): EnvVars => {
       STORE_PASSWORD: process.env.SSL_STORE_PASSWORD as string,
       PAYMENT_URL: process.env.SSL_PAYMENT_URL as string,
       VALIDATION_URL: process.env.SSL_VALIDATION_URL as string,
+      IPN_URL: process.env.SSL_IPN_URL as string,
       SUCCEEDED_FRONTEND_URL: process.env.SSL_SUCCEEDED_FRONTEND_URL as string,
       FAILED_FRONTEND_URL: process.env.SSL_FAILED_FRONTEND_URL as string,
       CANCELLED_FRONTEND_URL: process.env.SSL_CANCELLED_FRONTEND_URL as string,
@@ -175,6 +188,12 @@ const loadEnvVars = (): EnvVars => {
       SMTP_USER: process.env.SMTP_USER as string,
       SMTP_PASS: process.env.SMTP_PASS as string,
       SMTP_FROM_EMAIL: process.env.SMTP_FROM_EMAIL as string,
+    },
+    REDIS: {
+      USERNAME: process.env.REDIS_USERNAME as string,
+      PASSWORD: process.env.REDIS_PASSWORD as string,
+      HOST: process.env.REDIS_HOST as string,
+      PORT: Number(process.env.REDIS_PORT),
     },
   };
 };

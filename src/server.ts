@@ -5,6 +5,7 @@ import nodeDns from "node:dns";
 
 import app from "./app.js";
 import { envVars } from "./app/config/env.js";
+import { connectRedis } from "./app/config/redis.config.js";
 import seedSuperAdmin from "./app/utils/seedSuperAdmin.js";
 
 // Use reliable public DNS servers to reduce connection issues during startup
@@ -51,6 +52,7 @@ const gracefulShutdown = (event: string, isError = false) => {
 };
 
 (async () => {
+  await connectRedis();
   await startServer();
   await seedSuperAdmin();
 })();

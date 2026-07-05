@@ -62,7 +62,14 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         [{ ...payload, user: userId }],
         { session },
       );
-      const booking = bookingDocs[0]!;
+      const booking = bookingDocs[0];
+
+      if (!booking) {
+        throw new AppError(
+          status.INTERNAL_SERVER_ERROR,
+          "Booking creation failed",
+        );
+      }
 
       const paymentDocs = await PaymentModel.create(
         [
@@ -75,7 +82,14 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         ],
         { session },
       );
-      const payment = paymentDocs[0]!;
+      const payment = paymentDocs[0];
+
+      if (!payment) {
+        throw new AppError(
+          status.INTERNAL_SERVER_ERROR,
+          "Payment creation failed",
+        );
+      }
 
       const result = await BookingModel.findByIdAndUpdate(
         booking._id,
@@ -85,6 +99,13 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
         .populate("user", "name email phone address")
         .populate("tour", "title costFrom")
         .populate("payment", "transactionId amount currency status");
+
+      if (!result) {
+        throw new AppError(
+          status.INTERNAL_SERVER_ERROR,
+          "Booking update failed",
+        );
+      }
 
       await session.commitTransaction();
       return { bookingResult: result, paymentResult: payment };
@@ -100,8 +121,8 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
     const sslPayment = await SSLCommerzServices.initiatePayment({
       name: user.name,
       email: user.email,
-      phone: user.phone!,
-      address: user.address!,
+      phone: user.phone,
+      address: user.address,
       amount: paymentResult.amount,
       currency: paymentResult.currency,
       transactionId: paymentResult.transactionId,
@@ -111,9 +132,9 @@ const createBookingIntoDB = async (payload: IBookingCreate, userId: string) => {
       paymentUrl: sslPayment.GatewayPageURL,
       booking: bookingResult,
     };
-  } catch (error) {
+  } catch {
     await Promise.all([
-      BookingModel.findByIdAndUpdate(bookingResult!._id, {
+      BookingModel.findByIdAndUpdate(bookingResult._id, {
         bookingStatus: BookingStatus.Failed,
       }),
       PaymentModel.findOneAndUpdate(

@@ -15,6 +15,7 @@ const initiatePayment = async (payload: ISSLCommerzPayload) => {
     success_url: `${envVars.SSL.SUCCEEDED_BACKEND_URL}?transactionId=${payload.transactionId}`,
     fail_url: `${envVars.SSL.FAILED_BACKEND_URL}?transactionId=${payload.transactionId}`,
     cancel_url: `${envVars.SSL.CANCELLED_BACKEND_URL}?transactionId=${payload.transactionId}`,
+    ipn_url: envVars.SSL.IPN_URL,
     shipping_method: "N/A",
     product_name: "Tour Booking",
     product_category: "Tour Service",
@@ -57,6 +58,40 @@ const initiatePayment = async (payload: ISSLCommerzPayload) => {
   }
 };
 
+const validatePayment = async (payload: Record<string, string>) => {
+  let gatewayData: Record<string, string>;
+
+  try {
+    const response = await axios({
+      method: "GET",
+      url: envVars.SSL.VALIDATION_URL,
+      params: {
+        val_id: payload.val_id,
+        store_id: envVars.SSL.STORE_ID,
+        store_passwd: envVars.SSL.STORE_PASSWORD,
+        format: "json",
+      },
+    });
+
+    gatewayData = response.data as Record<string, string>;
+  } catch (error) {
+    throw new AppError(
+      status.BAD_REQUEST,
+      error instanceof Error ? error.message : "Payment validation failed",
+    );
+  }
+
+  if (gatewayData.status !== "VALID" && gatewayData.status !== "VALIDATED") {
+    throw new AppError(
+      status.BAD_REQUEST,
+      `Payment validation failed: gateway reported status "${gatewayData.status}"`,
+    );
+  }
+
+  return gatewayData;
+};
+
 export const SSLCommerzServices = {
   initiatePayment,
+  validatePayment,
 };

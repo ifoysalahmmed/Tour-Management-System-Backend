@@ -55,8 +55,9 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 const getMyProfile = catchAsync(async (req, res) => {
   const decodedToken = req.user as JwtPayload;
-  const result = await UserServices.getUserByEmailFromDB(
-    decodedToken.email as string,
+
+  const result = await UserServices.getUserByIdFromDB(
+    decodedToken.id as string,
   );
 
   sendResponse(res, {
@@ -68,8 +69,8 @@ const getMyProfile = catchAsync(async (req, res) => {
 });
 
 const getAUser = catchAsync(async (req, res) => {
-  const { email } = req.params;
-  const result = await UserServices.getUserByEmailFromDB(email as string);
+  const { userId } = req.params;
+  const result = await UserServices.getUserByIdFromDB(userId as string);
 
   sendResponse(res, {
     statusCode: status.OK,

@@ -25,8 +25,9 @@ const initiatePayment = catchAsync(async (req, res) => {
 
 const paymentSucceeded = catchAsync(async (req, res) => {
   const query = req.query as Record<string, string>;
+  const gatewayData = req.body as Record<string, string>;
 
-  const result = await PaymentServices.paymentSucceeded(query);
+  const result = await PaymentServices.paymentSucceeded(query, gatewayData);
 
   res.redirect(
     `${envVars.SSL.SUCCEEDED_FRONTEND_URL}?transactionId=${query.transactionId}&message=${result.message}&amount=${result.amount}&currency=${result.currency}&status=success`,
@@ -53,9 +54,41 @@ const paymentCancelled = catchAsync(async (req, res) => {
   );
 });
 
+const getInvoiceDownloadUrl = catchAsync(async (req, res) => {
+  const { paymentId } = req.params as { paymentId: string };
+  const userId = (req.user as JwtPayload)?.id;
+
+  const result = await PaymentServices.getInvoiceDownloadUrl(
+    paymentId,
+    userId as string,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "Invoice download URL retrieved successfully",
+    data: result,
+  });
+});
+
+const validatePayment = catchAsync(async (req, res) => {
+  const result = await PaymentServices.validatePayment(
+    req.body as Record<string, string>,
+  );
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: result.message,
+    data: result,
+  });
+});
+
 export const PaymentControllers = {
   initiatePayment,
   paymentSucceeded,
   paymentFailed,
   paymentCancelled,
+  getInvoiceDownloadUrl,
+  validatePayment,
 };

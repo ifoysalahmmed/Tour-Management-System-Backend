@@ -15,6 +15,8 @@ import sendResponse from "./app/utils/sendResponse.js";
 
 const app: Express = express();
 
+app.set("trust proxy", 1);
+
 // Configure session for short-lived OAuth authentication flow
 app.use(
   expressSession({
@@ -40,6 +42,7 @@ app.use(
 app.use(
   cors({
     origin: envVars.ALLOWED_ORIGINS,
+    credentials: true,
   }),
 );
 

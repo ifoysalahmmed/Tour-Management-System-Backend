@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs";
+import type { HydratedDocument } from "mongoose";
 import passport from "passport";
 import {
   Strategy as GoogleStrategy,
@@ -7,7 +8,7 @@ import {
 } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 
-import { UserRole } from "../modules/user/user.interface.js";
+import { type IUser, UserRole } from "../modules/user/user.interface.js";
 import { UserModel } from "../modules/user/user.model.js";
 import { assertUserStatus } from "../utils/assertUserStatus.js";
 import { envVars } from "./env.js";
@@ -123,20 +124,25 @@ passport.use(
   ),
 );
 
-passport.serializeUser((user: any, done: (err: any, id?: unknown) => void) => {
-  done(null, user._id);
-});
+passport.serializeUser(
+  (user: Express.User, done: (err: Error | null, id?: unknown) => void) => {
+    done(null, (user as HydratedDocument<IUser>)._id);
+  },
+);
 
 passport.deserializeUser(
   async (
     id: unknown,
-    done: (err: any, user?: false | Express.User | null | undefined) => void,
+    done: (
+      err: Error | null,
+      user?: false | Express.User | null | undefined,
+    ) => void,
   ) => {
     try {
       const user = await UserModel.findById(id);
       done(null, user);
     } catch (error) {
-      done(error, false);
+      done(error as Error, false);
     }
   },
 );

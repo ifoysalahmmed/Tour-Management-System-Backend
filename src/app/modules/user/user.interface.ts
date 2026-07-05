@@ -30,4 +30,5 @@ export interface IUser {
   isDeleted?: boolean;
   passwordChangedAt?: Date;
   passwordResetRequestedAt?: Date;
+  createdAt?: Date;
 }

@@ -3,6 +3,7 @@ dist/
 coverage/
 
 .env
+.env.dev
 # .env.*
 
 npm-debug.log*
@@ -12,3 +13,4 @@ pnpm-debug.log*
 
 .DS_Store
 *.tsbuildinfo
+.vercel

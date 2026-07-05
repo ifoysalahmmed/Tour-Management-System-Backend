@@ -29,7 +29,7 @@ router.get(
 );
 
 router.get(
-  "/:email",
+  "/:id",
   checkAuth(UserRole.Admin, UserRole.SuperAdmin),
   UserControllers.getAUser,
 );
