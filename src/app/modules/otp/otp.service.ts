@@ -9,7 +9,7 @@ import { UserModel } from "../user/user.model.js";
 const OTP_EXPIRATION_MS = 2 * 60 * 1000;
 const OTP_RESEND_DELAY_MS = 5 * 60 * 1000;
 
-const generateOTP = (length: number = 6) => {
+const generateOTP = (length = 6) => {
   return crypto.randomInt(10 ** (length - 1), 10 ** length).toString();
 };
 
