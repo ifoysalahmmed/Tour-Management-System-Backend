@@ -48,8 +48,8 @@ const initiatePayment = async (bookingId: string, userId: string) => {
     const sslPayment = await SSLCommerzServices.initiatePayment({
       name: user.name,
       email: user.email,
-      phone: user.phone!,
-      address: user.address!,
+      phone: user.phone,
+      address: user.address,
       amount: payment.amount,
       currency: payment.currency,
       transactionId: payment.transactionId,
@@ -58,7 +58,7 @@ const initiatePayment = async (bookingId: string, userId: string) => {
     return {
       paymentUrl: sslPayment.GatewayPageURL,
     };
-  } catch (error) {
+  } catch {
     throw new AppError(
       status.BAD_REQUEST,
       "Payment gateway initialization failed",
@@ -207,7 +207,10 @@ const confirmPayment = async (
       ],
     });
   } catch (invoiceError) {
-    console.error("Post-payment invoice/email delivery failed:", invoiceError);
+    throw new AppError(
+      status.INTERNAL_SERVER_ERROR,
+      `Payment succeeded but invoice generation or email delivery failed: ${invoiceError}`,
+    );
   }
 
   return {
